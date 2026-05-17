@@ -19,6 +19,8 @@
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
-    "@types/aos": "^3.0.8"
+    "@playwright/test": "^1.60.0",
+    "@types/aos": "^3.0.8",
+    "lighthouse": "^13.3.0"
   }
 }
