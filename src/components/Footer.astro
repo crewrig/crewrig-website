@@ -1,14 +1,39 @@
 ---
-const year = new Date().getFullYear();
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<footer class="border-t border-white/5 py-10 text-center text-sm text-slate-400">
-  <p>
-    &copy; {year} CrewRig contributors ·
-    <a
-      href="https://github.com/hcross/crewrig"
-      class="underline decoration-[#7c3aed] underline-offset-4 hover:text-white"
-      >GitHub</a
-    >
-  </p>
+<footer class="border-t border-[#7c3aed]/20 bg-[#0d0d14] px-6 py-12 sm:px-10">
+  <div class="mx-auto max-w-6xl">
+    <div class="flex flex-col items-center gap-6 md:flex-row md:justify-between">
+      <div class="flex items-center gap-3">
+        <img
+          src={`${base}/logo.png`}
+          alt="CrewRig"
+          width="120"
+          height="65"
+          class="h-8 w-auto"
+        />
+        <span class="text-sm text-[#9090a8]">© 2025 CrewRig — Open Source</span>
+      </div>
+
+      <nav class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+        <a
+          href="https://github.com/hcross/crewrig"
+          class="text-[#9090a8] underline decoration-[#7c3aed]/40 underline-offset-4 transition hover:text-[#f0f0f6] hover:decoration-[#8b5cf6]"
+        >GitHub</a>
+        <a
+          href="https://github.com/hcross/crewrig/blob/main/LICENSE"
+          class="text-[#9090a8] underline decoration-[#7c3aed]/40 underline-offset-4 transition hover:text-[#f0f0f6] hover:decoration-[#8b5cf6]"
+        >License (MIT)</a>
+        <a
+          href="https://github.com/hcross/crewrig/blob/main/CONTRIBUTING.md"
+          class="text-[#9090a8] underline decoration-[#7c3aed]/40 underline-offset-4 transition hover:text-[#f0f0f6] hover:decoration-[#8b5cf6]"
+        >Contributing</a>
+      </nav>
+    </div>
+
+    <p class="mt-8 text-center text-sm italic text-[#9090a8]">
+      Your team's AI, finally on the same page.
+    </p>
+  </div>
 </footer>

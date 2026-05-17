@@ -1,14 +1,67 @@
 ---
+const features = [
+  {
+    icon: '🪜',
+    title: 'Layered context, no conflicts',
+    description:
+      "Personal, community, and project rules merge in a predictable order. Nobody's personal preferences ever leak into the team config — and the team config never overrides someone's local setup.",
+  },
+  {
+    icon: '🧰',
+    title: 'Reusable skills, on tap',
+    description:
+      'A growing library of community-authored agent skills your team can import and customize. The capability you needed last week is probably already written.',
+  },
+  {
+    icon: '⚡',
+    title: 'Friction becomes fuel',
+    description:
+      'A built-in feedback loop captures the rough edges agents encounter in real work, curates them, and ships fixes back to the shared layer. Your config gets sharper every sprint.',
+  },
+  {
+    icon: '🔌',
+    title: 'Tool-agnostic by design',
+    description:
+      'Write the config once; ship it to Claude Code and Gemini CLI today, with more harnesses landing. Switching tools no longer means rewriting your prompt library.',
+  },
+  {
+    icon: '🔐',
+    title: 'Secrets stay where they belong',
+    description:
+      'Credentials, tokens, and private data never enter the shared layer or travel to the model. Least-privilege defaults, vault-friendly, GDPR-aware out of the box.',
+  },
+];
+
+const accentBorders = [
+  'border-[#7c3aed]/30',
+  'border-[#6366f1]/30',
+  'border-[#7c3aed]/30',
+  'border-[#6366f1]/30',
+  'border-[#7c3aed]/30',
+];
 ---
 
-<section id="features" class="section bg-[#16161f]" data-aos="fade-up">
+<section id="features" class="section">
   <div class="section-wide">
-    <h2 class="text-3xl sm:text-4xl font-semibold mb-10">Features</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- TODO(copy): feature cards -->
-      <div class="rounded-2xl bg-[#0d0d14] p-6 border border-white/5">
-        Placeholder card
-      </div>
+    <h2
+      class="mb-14 text-center text-3xl font-semibold tracking-tight text-[#f0f0f6] sm:text-4xl"
+      data-aos="fade-up"
+    >
+      Built for teams that ship.
+    </h2>
+
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {features.map((f, i) => (
+        <article
+          class={`rounded-xl border ${accentBorders[i]} bg-[#16161f] p-6 transition hover:border-[#8b5cf6]/60 hover:shadow-lg hover:shadow-[#7c3aed]/10`}
+          data-aos="fade-up"
+          data-aos-delay={i * 100}
+        >
+          <div class="mb-4 text-3xl" aria-hidden="true">{f.icon}</div>
+          <h3 class="mb-3 text-lg font-semibold text-[#f0f0f6]">{f.title}</h3>
+          <p class="text-sm text-[#9090a8] leading-relaxed">{f.description}</p>
+        </article>
+      ))}
     </div>
   </div>
 </section>

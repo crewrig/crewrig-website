@@ -1,12 +1,49 @@
 ---
+const pillars = [
+  {
+    label: 'Personal layer',
+    title: 'Your terminal stays yours',
+    description:
+      "Personal settings, your own SOUL persona, the keybindings you can't live without — all of it sits in a private layer the team never touches. Uniformity is not the goal; leverage is.",
+  },
+  {
+    label: 'Community zone',
+    title: 'Shared context, versioned like code',
+    description:
+      'Skills, agent definitions, and team conventions live in a `community-config/` directory the whole crew inherits. Reviewed in PRs, tracked in git, distributed to every harness on the team.',
+  },
+  {
+    label: 'Harness loop',
+    title: 'The framework learns from use',
+    description:
+      'When an agent hits friction, it tags it. A curator clusters the signals, files issues, and ships fixes back into the shared config. Every workflow papercut becomes a permanent improvement.',
+  },
+];
 ---
 
-<section id="solution" class="section bg-[#16161f]" data-aos="fade-up">
-  <div class="section-narrow">
-    <h2 class="text-3xl sm:text-4xl font-semibold mb-6">The Solution</h2>
-    <p class="text-slate-300 leading-relaxed">
-      <!-- TODO(copy): solution section body -->
-      Placeholder.
-    </p>
+<section id="solution" class="section">
+  <div class="section-wide">
+    <h2
+      class="mb-14 text-center text-3xl font-semibold tracking-tight text-[#f0f0f6] sm:text-4xl"
+      data-aos="fade-up"
+    >
+      Three layers. One coherent stack.
+    </h2>
+
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+      {pillars.map((p, i) => (
+        <article
+          class="rounded-xl border border-[#7c3aed]/20 border-l-4 border-l-[#7c3aed] bg-[#16161f] p-6 transition hover:bg-[#1a1a26]"
+          data-aos="fade-up"
+          data-aos-delay={i * 100}
+        >
+          <div class="mb-2 text-xs font-mono uppercase tracking-widest text-[#a5b4fc]">
+            {p.label}
+          </div>
+          <h3 class="mb-3 text-xl font-semibold text-[#f0f0f6]">{p.title}</h3>
+          <p class="text-[#9090a8] leading-relaxed" set:html={p.description.replace(/`([^`]+)`/g, '<code class="font-mono text-[#a5b4fc]">$1</code>')} />
+        </article>
+      ))}
+    </div>
   </div>
 </section>
