@@ -18,12 +18,12 @@ test.describe('Structure', () => {
     expect((await h1.textContent())?.trim().length).toBeGreaterThan(0);
   });
 
-  test('Hero: Fork on GitHub link points to github.com/hcross/crewrig', async ({ page }) => {
+  test('Hero: Fork on GitHub link points to github.com/crewrig/crewrig', async ({ page }) => {
     await page.goto('./');
     const fork = page.locator('section#hero a', { hasText: /Fork on GitHub/i });
     await expect(fork).toBeVisible();
     const href = await fork.getAttribute('href');
-    expect(href).toContain('github.com/hcross/crewrig');
+    expect(href).toContain('github.com/crewrig/crewrig');
   });
 
   test('Hero: Quick Start link points to #quick-start', async ({ page }) => {
