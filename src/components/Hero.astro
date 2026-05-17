@@ -1,0 +1,27 @@
+---
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<section
+  id="hero"
+  class="section relative overflow-hidden"
+  data-aos="fade-up"
+>
+  <div class="section-wide flex flex-col items-center text-center">
+    <img
+      src={`${base}/logo.png`}
+      alt="CrewRig logo"
+      width="240"
+      height="131"
+      class="mb-10"
+      loading="eager"
+    />
+    <h1 class="text-4xl sm:text-6xl font-bold tracking-tight">
+      CrewRig
+    </h1>
+    <p class="mt-4 text-lg sm:text-xl text-slate-300 max-w-2xl">
+      <!-- TODO(copy): hero tagline -->
+      Multi-agent orchestration for everyday work.
+    </p>
+  </div>
+</section>
