@@ -1,5 +1,6 @@
 ---
-import logoSvg from '../assets/logo.svg?url';
+import { Image } from 'astro:assets';
+import logoSrc from '../assets/logo.png';
 ---
 
 <section
@@ -17,12 +18,14 @@ import logoSvg from '../assets/logo.svg?url';
   >
   </div>
 
-  <img
-    src={logoSvg}
+  <Image
+    src={logoSrc}
     alt="CrewRig"
-    width="240"
-    height="157"
-    class="mb-10 h-16 w-auto sm:h-20"
+    width={840}
+    height={548}
+    format="webp"
+    loading="eager"
+    class="mb-10 h-56 w-auto sm:h-[280px]"
     data-aos="fade-down"
   />
 
