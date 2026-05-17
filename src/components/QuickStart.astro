@@ -29,9 +29,9 @@ const steps = [
       </p>
     </div>
 
-    <div class="mx-auto mt-12 grid max-w-4xl gap-6">
+    <div class="mx-auto mt-12 grid max-w-4xl min-w-0 gap-6">
       {steps.map((s, i) => (
-        <div data-aos="fade-up" data-aos-delay={i * 100}>
+        <div class="min-w-0" data-aos="fade-up" data-aos-delay={i * 100}>
           <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
             {s.label}
           </div>
