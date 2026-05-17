@@ -1,0 +1,75 @@
+---
+import { Image } from 'astro:assets';
+import logoSrc from '../assets/logo.png';
+---
+
+<section
+  id="hero"
+  class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-24 text-center sm:px-10"
+>
+  <div
+    aria-hidden="true"
+    class="absolute left-1/2 top-1/2 -z-10 h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#7c3aed] opacity-20 blur-3xl"
+  >
+  </div>
+  <div
+    aria-hidden="true"
+    class="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_center,rgba(124,58,237,0.08),#0d0d14_70%)]"
+  >
+  </div>
+
+  <Image
+    src={logoSrc}
+    alt="CrewRig"
+    width={240}
+    height={131}
+    format="webp"
+    loading="eager"
+    class="mb-10 h-16 w-auto sm:h-20"
+    data-aos="fade-down"
+  />
+
+  <h1
+    class="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-[#f0f0f6] sm:text-5xl lg:text-6xl"
+    data-aos="fade-up"
+  >
+    Your AI knows you. It has no idea who your team is.
+  </h1>
+
+  <p
+    class="mt-6 max-w-2xl text-lg text-[#9090a8] sm:text-xl"
+    data-aos="fade-up"
+    data-aos-delay="100"
+  >
+    CrewRig is the shared layer your AI tools have been missing — versioned
+    prompts, skills, and personas your whole team inherits. Stop reinventing
+    context every standup.
+  </p>
+
+  <div
+    class="mt-10 flex flex-col items-center gap-4 sm:flex-row"
+    data-aos="fade-up"
+    data-aos-delay="200"
+  >
+    <a
+      href="https://github.com/crewrig/crewrig"
+      class="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-[#7c3aed] px-6 py-3 font-semibold text-white shadow-lg shadow-[#7c3aed]/30 transition hover:bg-[#8b5cf6]"
+    >
+      Fork on GitHub →
+    </a>
+    <a
+      href="#quick-start"
+      class="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-[#7c3aed]/40 px-6 py-3 font-semibold text-[#f0f0f6] transition hover:border-[#8b5cf6] hover:bg-[#7c3aed]/10"
+    >
+      Quick Start ↓
+    </a>
+  </div>
+
+  <p
+    class="mt-10 text-sm uppercase tracking-widest text-[#9090a8]"
+    data-aos="fade-up"
+    data-aos-delay="300"
+  >
+    Open source · Works with Claude Code &amp; Gemini CLI
+  </p>
+</section>

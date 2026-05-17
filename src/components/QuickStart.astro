@@ -1,0 +1,60 @@
+---
+const steps = [
+  {
+    label: 'Step 1 — Fork the repo',
+    code: 'gh repo fork crewrig/crewrig --clone',
+    caption: "Get your team's own copy of the framework.",
+  },
+  {
+    label: 'Step 2 — Install for your harness',
+    code: 'bash scripts/install-claude-plugin.sh\n# or: bash scripts/setup-gemini-interactive.sh',
+    caption: 'Compile the shared config into your AI tool.',
+  },
+  {
+    label: 'Step 3 — Push to your team',
+    code: 'git push origin main',
+    caption: "That's it. Your team's AI context is now versioned, shared, and improving.",
+  },
+];
+---
+
+<section id="quick-start" class="section bg-[#16161f]">
+  <div class="section-wide">
+    <div class="mx-auto max-w-3xl text-center" data-aos="fade-up">
+      <h2 class="text-3xl font-semibold tracking-tight text-[#f0f0f6] sm:text-4xl">
+        Up and running in 3 commands.
+      </h2>
+      <p class="mt-4 text-lg text-[#9090a8]">
+        No accounts, no SaaS, no waiting list.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-12 grid max-w-4xl min-w-0 gap-6">
+      {steps.map((s, i) => (
+        <div class="min-w-0" data-aos="fade-up" data-aos-delay={i * 100}>
+          <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
+            {s.label}
+          </div>
+          <div class="overflow-hidden rounded-lg border border-[#7c3aed]/30 bg-[#0d0d14]">
+            <div class="flex items-center gap-2 border-b border-[#7c3aed]/20 bg-[#16161f] px-4 py-2">
+              <span class="h-3 w-3 rounded-full bg-red-500/70"></span>
+              <span class="h-3 w-3 rounded-full bg-yellow-500/70"></span>
+              <span class="h-3 w-3 rounded-full bg-green-500/70"></span>
+            </div>
+            <pre class="overflow-x-auto p-5 font-mono text-sm leading-relaxed text-[#a5b4fc]"><code>{s.code}</code></pre>
+          </div>
+          <p class="mt-3 text-sm italic text-[#9090a8]">{s.caption}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-14 flex justify-center" data-aos="fade-up">
+      <a
+        href="https://github.com/crewrig/crewrig"
+        class="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-[#7c3aed] px-6 py-3 font-semibold text-white shadow-lg shadow-[#7c3aed]/30 transition hover:bg-[#8b5cf6]"
+      >
+        Fork on GitHub →
+      </a>
+    </div>
+  </div>
+</section>

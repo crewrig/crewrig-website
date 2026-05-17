@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0d0d14;
+  --color-bg-elevated: #16161f;
+  --color-accent: #7c3aed;
+  --color-accent-hover: #8b5cf6;
+  --color-accent-soft: rgba(124, 58, 237, 0.15);
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html,
+body {
+  background-color: var(--color-bg);
+}
+
+/* Section base spacing — every section pulls from this. */
+.section {
+  @apply px-6 py-24 sm:px-10 lg:px-16;
+}
+
+.section-narrow {
+  @apply mx-auto max-w-3xl;
+}
+
+.section-wide {
+  @apply mx-auto max-w-6xl;
+}

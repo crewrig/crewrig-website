@@ -1,0 +1,84 @@
+---
+const steps = [
+  {
+    n: '1',
+    label: 'Fork',
+    description: "Clone the CrewRig template into your team's GitHub org.",
+  },
+  {
+    n: '2',
+    label: 'Profile',
+    description: "Drop in your team's stack, conventions, and review rituals.",
+  },
+  {
+    n: '3',
+    label: 'Deploy',
+    description:
+      'One script compiles the config into Claude Code, Gemini CLI, and every supported harness.',
+  },
+  {
+    n: '4',
+    label: 'Share',
+    description:
+      "Push to main. Every developer's next session inherits the update.",
+  },
+  {
+    n: '5',
+    label: 'Improve',
+    description: 'Agents report friction; the curator turns signals into fixes.',
+  },
+  {
+    n: '∞',
+    label: 'Compound',
+    description: 'The shared layer compounds while you sleep.',
+    final: true,
+  },
+];
+---
+
+<section id="how-it-works" class="section bg-[#16161f]">
+  <div class="section-wide">
+    <h2
+      class="mb-16 text-center text-3xl font-semibold tracking-tight text-[#f0f0f6] sm:text-4xl"
+      data-aos="fade-up"
+    >
+      Six steps. Then it compounds.
+    </h2>
+
+    <ol class="relative grid grid-cols-1 gap-8 md:grid-cols-6 md:gap-4">
+      <div
+        aria-hidden="true"
+        class="absolute left-6 top-0 hidden h-full w-px bg-[#7c3aed]/30 md:left-0 md:top-6 md:h-px md:w-full md:block"
+      >
+      </div>
+
+      {steps.map((s, i) => (
+        <li
+          class="relative flex flex-row items-start gap-4 md:flex-col md:items-center md:text-center"
+          data-aos="fade-up"
+          data-aos-delay={i * 100}
+        >
+          <div
+            class={`relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 font-semibold ${
+              s.final
+                ? 'border-[#7c3aed] bg-[#7c3aed] text-2xl text-white shadow-lg shadow-[#7c3aed]/40'
+                : 'border-[#7c3aed] bg-[#0d0d14] text-[#a5b4fc]'
+            }`}
+          >
+            {s.n}
+          </div>
+          <div class="md:mt-4">
+            <div
+              class={`font-semibold ${s.final ? 'text-lg text-[#8b5cf6]' : 'text-[#f0f0f6]'}`}
+            >
+              {s.label}
+            </div>
+            <p class="mt-1 text-sm text-[#9090a8] leading-snug">
+              {s.description}
+            </p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>

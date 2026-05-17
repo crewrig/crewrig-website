@@ -1,0 +1,49 @@
+---
+const cards = [
+  {
+    icon: '🧩',
+    title: 'Everyone configures alone',
+    description:
+      "Each developer wires up their own prompts, their own system instructions, their own personas. The same setup work happens N times — and N times, slightly differently.",
+  },
+  {
+    icon: '🚪',
+    title: 'Context walks out the door',
+    description:
+      "Personas, prompts, and hard-won workflows live in someone's dotfiles. When that engineer leaves, so does the institutional knowledge their AI was carrying.",
+  },
+  {
+    icon: '🤖',
+    title: 'Your AI is a stranger to your codebase',
+    description:
+      'The model has never seen your conventions, your modules, or the trade-offs your team already settled three quarters ago. Every prompt re-litigates the basics.',
+  },
+];
+---
+
+<section id="problem" class="section">
+  <div class="section-wide">
+    <h2
+      class="mb-14 text-center text-3xl font-semibold tracking-tight text-[#f0f0f6] sm:text-4xl"
+      data-aos="fade-up"
+    >
+      The AI productivity gap is a team problem.
+    </h2>
+
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+      {cards.map((card, i) => (
+        <article
+          class="group rounded-xl border border-[#7c3aed]/20 bg-[#16161f] p-6 transition hover:border-[#8b5cf6]/50 hover:shadow-lg hover:shadow-[#7c3aed]/10"
+          data-aos="fade-up"
+          data-aos-delay={i * 100}
+        >
+          <div class="mb-4 text-4xl" aria-hidden="true">{card.icon}</div>
+          <h3 class="mb-3 text-xl font-semibold text-[#f0f0f6]">
+            {card.title}
+          </h3>
+          <p class="text-[#9090a8] leading-relaxed">{card.description}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
