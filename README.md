@@ -1,43 +1,58 @@
-# Astro Starter Kit: Minimal
+# CrewRig — Showcase Website
+
+The official showcase site for [CrewRig](https://github.com/crewrig/crewrig), the shared configuration framework that lets development teams coordinate AI tools (Claude Code, Gemini CLI) at team scale.
+
+**Live site:** https://crewrig.github.io/crewrig-website/
+
+## Stack
+
+- [Astro 6](https://astro.build/) — static output, zero-JS by default
+- [Tailwind CSS v4](https://tailwindcss.com/) — CSS-first `@theme` tokens, no config file
+- [AOS 2.3](https://michalsnik.github.io/aos/) — scroll-triggered animations (bundled via npm)
+- Google Fonts — Inter + JetBrains Mono, async-loaded
+- GitHub Actions — automated build and deploy to GitHub Pages
+
+## Development
 
 ```sh
-npm create astro@latest -- --template minimal
+# Install dependencies
+npm install
+
+# Local dev server — http://localhost:4321/crewrig-website/
+npm run dev
+
+# Production build + preview
+npm run build && npm run preview
+
+# E2E tests (requires Chromium)
+npx playwright install chromium
+npm test
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Structure
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```
+src/
+├── layouts/Layout.astro        # <html>, fonts, AOS init
+├── pages/index.astro           # single page, composes 8 sections
+├── components/
+│   ├── Hero.astro
+│   ├── Problem.astro
+│   ├── Insight.astro
+│   ├── Solution.astro
+│   ├── HowItWorks.astro
+│   ├── FeaturesGrid.astro
+│   ├── QuickStart.astro
+│   └── Footer.astro
+├── assets/logo.png             # optimized via astro:assets → WebP
+└── styles/global.css           # Tailwind @theme tokens
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Deployment
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Pushes to `main` automatically build and deploy via `.github/workflows/deploy.yml`.
+One-time manual step: **Settings → Pages → Source: GitHub Actions**.
 
-Any static assets, like images, can be placed in the `public/` directory.
+## License
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+MIT — see [crewrig/crewrig](https://github.com/crewrig/crewrig) for the framework itself.

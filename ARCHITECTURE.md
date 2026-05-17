@@ -6,7 +6,7 @@ site. Aimed at the next agent (or human) picking this up.
 ## Goal
 
 A single-page marketing site for the **CrewRig** framework, hosted on
-GitHub Pages (project page `hcross.github.io/crewrig-website/`).
+GitHub Pages (project page `crewrig.github.io/crewrig-website/`).
 Constraints: static output, no SSR, fast to deploy, easy to extend
 section-by-section, scroll-driven animations.
 
@@ -22,7 +22,7 @@ section-by-section, scroll-driven animations.
 | ----------- | --------------------------------------- | ------------------------------------------------------------------------------------- |
 | Framework   | Astro 6 (`minimal` template, strict TS) | Zero-JS by default, content-first, perfect fit for a marketing one-pager.             |
 | Styling     | Tailwind CSS v4 (`@tailwindcss/vite`)   | v4 ships as a Vite plugin — no PostCSS config, no `tailwind.config.js`. Faster build. |
-| Animation   | AOS 2.3 (`aos` npm + CSS via CDN)       | Tiny library, ideal for one-off scroll fades on a marketing page.                     |
+| Animation   | AOS 2.3 (`aos` npm, CSS bundled)        | Tiny library, ideal for one-off scroll fades on a marketing page.                     |
 | Output      | `output: 'static'`                      | Required for GitHub Pages.                                                            |
 | Deploy      | `actions/deploy-pages@v4` (native)      | Modern GitHub-native path. Avoids the `gh-pages` branch + PAT pattern.                |
 
@@ -49,8 +49,8 @@ would be overkill for a page with no interactive choreography.
 | `--color-accent`       | `#7c3aed`                      | Violet — links, key CTAs, accents. |
 | `--color-accent-hover` | `#8b5cf6`                      | Hover state for the violet accent. |
 | `--color-accent-soft`  | `rgba(124, 58, 237, 0.15)`     | Glows, soft backgrounds.           |
-| Text default           | `text-slate-100` (Tailwind)    | Body copy on dark background.      |
-| Text muted             | `text-slate-300/text-slate-400` | Secondary copy, footer.            |
+| Text default           | `#f0f0f6`                      | Body copy on dark background.      |
+| Text muted             | `#9090a8`                      | Secondary copy, footer.            |
 
 Dark-first by design; light mode is a non-goal for v1.
 
@@ -86,9 +86,8 @@ src/
     └── global.css          # Tailwind import + @theme tokens
 ```
 
-Section components currently ship placeholder copy and a `TODO(copy):`
-marker — the developer agent is expected to wire the copywriting
-agent's output into them.
+All section components contain live copy wired from `COPY.md`.
+The `COPY.md` file remains in the repo as the content source of record.
 
 ## Animation approach
 
@@ -104,9 +103,9 @@ Each section root carries `data-aos="fade-up"`. Rationale:
   feels gimmicky.
 - **`offset: 80`** — trigger slightly before the section enters the
   viewport so the animation completes near full visibility.
-- **CSS from CDN** — `aos.css` is loaded from unpkg in `<head>` to avoid
-  bundler complexity around the package's CSS export. Trade-off: one
-  extra DNS lookup; acceptable for a one-pager.
+- **CSS bundled via npm** — `import 'aos/dist/aos.css'` in `Layout.astro`
+  frontmatter; Vite bundles it into the page CSS, removing the CDN
+  render-blocking request (Lighthouse Perf: 88 → 97).
 
 ## GitHub Pages deployment
 
@@ -121,7 +120,7 @@ Each section root carries `data-aos="fade-up"`. Rationale:
   Source: GitHub Actions**. The workflow assumes this is set; without
   it `deploy-pages` fails.
 - `site` / `base` in `astro.config.mjs` are pinned to the project URL
-  (`https://hcross.github.io` + `/crewrig-website`). If the site moves
+  (`https://crewrig.github.io` + `/crewrig-website`). If the site moves
   to a custom domain or to the root path, both values must be updated
   in lockstep — there is no environment override today.
 

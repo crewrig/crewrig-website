@@ -41,6 +41,7 @@ const pillars = [
             {p.label}
           </div>
           <h3 class="mb-3 text-xl font-semibold text-[#f0f0f6]">{p.title}</h3>
+          {/* set:html is safe here: descriptions are hardcoded constants, never user-supplied */}
           <p class="text-[#9090a8] leading-relaxed" set:html={p.description.replace(/`([^`]+)`/g, '<code class="font-mono text-[#a5b4fc]">$1</code>')} />
         </article>
       ))}
