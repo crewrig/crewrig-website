@@ -6,11 +6,11 @@ export default defineConfig({
   retries: 0,
   reporter: 'list',
   use: {
-    baseURL: 'http://localhost:4321/crewrig-website/',
+    baseURL: 'http://localhost:4321/',
   },
   webServer: {
     command: 'npm run preview',
-    url: 'http://localhost:4321/crewrig-website/',
+    url: 'http://localhost:4321/',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },
