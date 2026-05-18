@@ -102,9 +102,9 @@ test.describe('Structure', () => {
     expect(href).toContain('github.com');
   });
 
-  test('Footer: License/MIT link present', async ({ page }) => {
+  test('Footer: License Apache 2.0 link present', async ({ page }) => {
     await page.goto('./');
-    const link = page.locator('footer a', { hasText: /(License|MIT)/i }).first();
+    const link = page.locator('footer a', { hasText: /Apache 2\.0/i }).first();
     await expect(link).toBeVisible();
   });
 });
