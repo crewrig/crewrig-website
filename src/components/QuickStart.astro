@@ -49,21 +49,33 @@
 
       <!-- CLI toggle -->
       <div class="flex items-center gap-3 min-w-0" data-aos="fade-up" data-aos-delay="200">
-        <span class="text-sm text-[#9090a8]">Your AI harness:</span>
-        <div class="flex overflow-hidden rounded-lg border border-[#7c3aed]/30">
+        <span id="cli-toggle-label" class="text-sm text-[#9090a8]">Your AI harness:</span>
+        <div
+          role="tablist"
+          aria-labelledby="cli-toggle-label"
+          class="flex overflow-hidden rounded-lg border border-[#7c3aed]/30"
+        >
           <button
             id="btn-claude"
+            role="tab"
+            aria-selected="true"
+            aria-controls="panel-claude-3 panel-claude-4"
+            tabindex="0"
             class="cli-btn cli-btn--active px-4 py-2 text-sm font-semibold transition"
           >Claude Code</button>
           <button
             id="btn-gemini"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-gemini-3 panel-gemini-4"
+            tabindex="-1"
             class="cli-btn border-l border-[#7c3aed]/30 px-4 py-2 text-sm font-semibold transition"
           >Gemini CLI</button>
         </div>
       </div>
 
       <!-- Step 3: Initialize — Claude Code -->
-      <div class="min-w-0" data-cli="claude" data-aos="fade-up" data-aos-delay="300">
+      <div id="panel-claude-3" class="min-w-0" data-cli="claude" data-aos="fade-up" data-aos-delay="300">
         <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
           Step 3 — Initialize
         </div>
@@ -80,7 +92,7 @@ claude /init-soul</code></pre>
       </div>
 
       <!-- Step 3: Initialize — Gemini CLI -->
-      <div class="hidden min-w-0" data-cli="gemini" data-aos="fade-up" data-aos-delay="300">
+      <div id="panel-gemini-3" class="hidden min-w-0" data-cli="gemini" data-aos="fade-up" data-aos-delay="300">
         <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
           Step 3 — Initialize
         </div>
@@ -97,7 +109,7 @@ gemini "/init-soul"</code></pre>
       </div>
 
       <!-- Step 4: Setup — Claude Code -->
-      <div class="min-w-0" data-cli="claude" data-aos="fade-up" data-aos-delay="400">
+      <div id="panel-claude-4" class="min-w-0" data-cli="claude" data-aos="fade-up" data-aos-delay="400">
         <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
           Step 4 — Setup
         </div>
@@ -113,7 +125,7 @@ gemini "/init-soul"</code></pre>
       </div>
 
       <!-- Step 4: Setup — Gemini CLI -->
-      <div class="hidden min-w-0" data-cli="gemini" data-aos="fade-up" data-aos-delay="400">
+      <div id="panel-gemini-4" class="hidden min-w-0" data-cli="gemini" data-aos="fade-up" data-aos-delay="400">
         <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
           Step 4 — Setup
         </div>
@@ -153,19 +165,37 @@ gemini "/init-soul"</code></pre>
 </style>
 
 <script>
-  const btnClaude = document.getElementById('btn-claude');
-  const btnGemini = document.getElementById('btn-gemini');
+  const btnClaude = document.getElementById('btn-claude') as HTMLButtonElement | null;
+  const btnGemini = document.getElementById('btn-gemini') as HTMLButtonElement | null;
   const claudeBlocks = document.querySelectorAll('[data-cli="claude"]');
   const geminiBlocks = document.querySelectorAll('[data-cli="gemini"]');
 
   function selectCli(cli: 'claude' | 'gemini') {
     const isClaude = cli === 'claude';
+
+    // Update active button styles
     btnClaude?.classList.toggle('cli-btn--active', isClaude);
     btnGemini?.classList.toggle('cli-btn--active', !isClaude);
+
+    // Update ARIA state and roving tabindex
+    btnClaude?.setAttribute('aria-selected', String(isClaude));
+    btnGemini?.setAttribute('aria-selected', String(!isClaude));
+    btnClaude?.setAttribute('tabindex', isClaude ? '0' : '-1');
+    btnGemini?.setAttribute('tabindex', isClaude ? '-1' : '0');
+
+    // Show / hide panels
     claudeBlocks.forEach(el => el.classList.toggle('hidden', !isClaude));
     geminiBlocks.forEach(el => el.classList.toggle('hidden', isClaude));
   }
 
-  btnClaude?.addEventListener('click', () => selectCli('claude'));
-  btnGemini?.addEventListener('click', () => selectCli('gemini'));
+  btnClaude?.addEventListener('click', () => { selectCli('claude'); btnClaude.focus(); });
+  btnGemini?.addEventListener('click', () => { selectCli('gemini'); btnGemini.focus(); });
+
+  // Keyboard navigation: ArrowRight / ArrowLeft between tabs
+  [btnClaude, btnGemini].forEach(btn => {
+    btn?.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') { selectCli('gemini'); btnGemini?.focus(); }
+      if (e.key === 'ArrowLeft')  { selectCli('claude'); btnClaude?.focus(); }
+    });
+  });
 </script>
