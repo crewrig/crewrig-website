@@ -72,10 +72,20 @@ test.describe('Structure', () => {
     await expect(page.locator('#quick-start')).toBeVisible();
   });
 
-  test('QuickStart: 3 code blocks', async ({ page }) => {
+  test('QuickStart: 4 steps with CLI toggle (5 code blocks total)', async ({ page }) => {
     await page.goto('./');
+    // Steps 1-2 (CLI-agnostic) + steps 3-4 with claude+gemini variants = 5 pre blocks in DOM
     const pres = page.locator('section#quick-start pre');
-    await expect(pres).toHaveCount(3);
+    await expect(pres).toHaveCount(5);
+    // Claude variant visible by default, Gemini hidden
+    const claudeBlock = page.locator('section#quick-start [data-cli="claude"]').first();
+    const geminiBlock = page.locator('section#quick-start [data-cli="gemini"]').first();
+    await expect(claudeBlock).toBeVisible();
+    await expect(geminiBlock).toBeHidden();
+    // Toggle to Gemini
+    await page.click('#btn-gemini');
+    await expect(geminiBlock).toBeVisible();
+    await expect(claudeBlock).toBeHidden();
   });
 
   test('Footer: logo image exists', async ({ page }) => {
@@ -92,9 +102,9 @@ test.describe('Structure', () => {
     expect(href).toContain('github.com');
   });
 
-  test('Footer: License/MIT link present', async ({ page }) => {
+  test('Footer: License Apache 2.0 link present', async ({ page }) => {
     await page.goto('./');
-    const link = page.locator('footer a', { hasText: /(License|MIT)/i }).first();
+    const link = page.locator('footer a', { hasText: /Apache 2\.0/i }).first();
     await expect(link).toBeVisible();
   });
 });
