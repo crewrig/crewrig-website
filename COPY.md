@@ -2,7 +2,7 @@
 
 ## Section 1 — Hero
 
-**Badge / tagline:** Open source · Works with Claude Code & Gemini CLI
+**Badge / tagline:** Open source · Works with Claude Code, Gemini CLI & GitHub Copilot
 
 **Headline:** AI configuration that scales with your team — not just with you.
 
@@ -67,7 +67,7 @@
 
 1. **Fork** — Clone the CrewRig template into your team's GitHub org.
 2. **Profile** — Drop in your team's stack, conventions, and review rituals.
-3. **Deploy** — One script compiles the config into Claude Code, Gemini CLI, and every supported harness.
+3. **Deploy** — One script compiles the config into Claude Code, Gemini CLI, GitHub Copilot, and every supported harness.
 4. **Share** — Push to main. Every developer's next session inherits the update.
 5. **Improve** — Agents report friction; the curator turns signals into fixes.
 6. **∞** — Every friction your team tags becomes a ticket. Automatically.
@@ -92,7 +92,7 @@
 
 ### Card 4
 - **Title:** Tool-agnostic by design
-- **Description:** Write the config once; ship it to Claude Code and Gemini CLI today, with more harnesses landing. Switching tools no longer means rewriting your system prompt library.
+- **Description:** Write the config once; ship it to Claude Code, Gemini CLI, and GitHub Copilot today, with more harnesses landing. Switching tools no longer means rewriting your system prompt library.
 
 ### Card 5
 - **Title:** Secrets stay where they belong
@@ -117,6 +117,12 @@ Task · Gemini CLI or Claude Code · fzf · uv · yq
 
 *OS-specific install commands are in the README.*
 
+#### GitHub Copilot prerequisite
+Also install GitHub Copilot CLI:
+```bash
+gh extension install github/gh-copilot
+```
+
 ### Step 3 — Initialize (Claude Code)
 ```bash
 claude /init-personal-profile
@@ -130,6 +136,13 @@ gemini "/init-soul"
 ```
 *Build your personal profile and customize the agent identity.*
 
+### Step 3 — Initialize (GitHub Copilot)
+```bash
+gh copilot /init-personal-profile
+gh copilot /init-soul
+```
+*Build your personal profile and customize the agent identity. Run from the repo root so Copilot picks up `.github/skills/`.*
+
 ### Step 4 — Setup (Claude Code)
 ```bash
 task setup-claude-interactive
@@ -138,6 +151,11 @@ task setup-claude-interactive
 ### Step 4 — Setup (Gemini CLI)
 ```bash
 task setup-gemini-interactive
+```
+
+### Step 4 — Setup (GitHub Copilot)
+```bash
+task setup-copilot-interactive
 ```
 *Deploys the shared config to your harness.*
 

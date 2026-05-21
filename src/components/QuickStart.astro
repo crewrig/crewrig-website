@@ -71,6 +71,24 @@
             tabindex="-1"
             class="cli-btn border-l border-[#7c3aed]/30 px-4 py-2 text-sm font-semibold transition"
           >Gemini CLI</button>
+          <button
+            id="btn-copilot"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-copilot-3 panel-copilot-4"
+            tabindex="-1"
+            class="cli-btn border-l border-[#7c3aed]/30 px-4 py-2 text-sm font-semibold transition"
+          >GitHub Copilot</button>
+        </div>
+      </div>
+
+      <!-- Step 2 addendum: Copilot prerequisite -->
+      <div id="panel-copilot-2" class="hidden min-w-0" data-cli="copilot" data-aos="fade-up" data-aos-delay="150">
+        <div class="overflow-hidden rounded-lg border border-[#7c3aed]/30 bg-[#0d0d14] p-5">
+          <p class="font-mono text-sm leading-relaxed text-[#9090a8]">
+            Also install GitHub Copilot CLI:<br />
+            <span class="mt-2 block text-[#a5b4fc]">gh extension install github/gh-copilot</span>
+          </p>
         </div>
       </div>
 
@@ -108,6 +126,23 @@ gemini "/init-soul"</code></pre>
         <p class="mt-3 text-sm italic text-[#9090a8]">Build your personal profile and customize the agent identity.</p>
       </div>
 
+      <!-- Step 3: Initialize — GitHub Copilot -->
+      <div id="panel-copilot-3" class="hidden min-w-0" data-cli="copilot" data-aos="fade-up" data-aos-delay="300">
+        <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
+          Step 3 — Initialize
+        </div>
+        <div class="overflow-hidden rounded-lg border border-[#7c3aed]/30 bg-[#0d0d14]">
+          <div class="flex items-center gap-2 border-b border-[#7c3aed]/20 bg-[#16161f] px-4 py-2">
+            <span class="h-3 w-3 rounded-full bg-red-500/70"></span>
+            <span class="h-3 w-3 rounded-full bg-yellow-500/70"></span>
+            <span class="h-3 w-3 rounded-full bg-green-500/70"></span>
+          </div>
+          <pre class="overflow-x-auto p-5 font-mono text-sm leading-relaxed text-[#a5b4fc]"><code>gh copilot /init-personal-profile
+gh copilot /init-soul</code></pre>
+        </div>
+        <p class="mt-3 text-sm italic text-[#9090a8]">Build your personal profile and customize the agent identity. Run from the repo root so Copilot picks up <code class="text-[#a5b4fc]">.github/skills/</code>.</p>
+      </div>
+
       <!-- Step 4: Setup — Claude Code -->
       <div id="panel-claude-4" class="min-w-0" data-cli="claude" data-aos="fade-up" data-aos-delay="400">
         <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
@@ -140,6 +175,22 @@ gemini "/init-soul"</code></pre>
         <p class="mt-3 text-sm italic text-[#9090a8]">Deploys the shared config to your Gemini CLI harness.</p>
       </div>
 
+      <!-- Step 4: Setup — GitHub Copilot -->
+      <div id="panel-copilot-4" class="hidden min-w-0" data-cli="copilot" data-aos="fade-up" data-aos-delay="400">
+        <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
+          Step 4 — Setup
+        </div>
+        <div class="overflow-hidden rounded-lg border border-[#7c3aed]/30 bg-[#0d0d14]">
+          <div class="flex items-center gap-2 border-b border-[#7c3aed]/20 bg-[#16161f] px-4 py-2">
+            <span class="h-3 w-3 rounded-full bg-red-500/70"></span>
+            <span class="h-3 w-3 rounded-full bg-yellow-500/70"></span>
+            <span class="h-3 w-3 rounded-full bg-green-500/70"></span>
+          </div>
+          <pre class="overflow-x-auto p-5 font-mono text-sm leading-relaxed text-[#a5b4fc]"><code>task setup-copilot-interactive</code></pre>
+        </div>
+        <p class="mt-3 text-sm italic text-[#9090a8]">Deploys the shared config to your GitHub Copilot harness.</p>
+      </div>
+
     </div>
 
     <div class="mt-14 flex justify-center" data-aos="fade-up">
@@ -165,37 +216,47 @@ gemini "/init-soul"</code></pre>
 </style>
 
 <script>
-  const btnClaude = document.getElementById('btn-claude') as HTMLButtonElement | null;
-  const btnGemini = document.getElementById('btn-gemini') as HTMLButtonElement | null;
-  const claudeBlocks = document.querySelectorAll('[data-cli="claude"]');
-  const geminiBlocks = document.querySelectorAll('[data-cli="gemini"]');
+  const btnClaude  = document.getElementById('btn-claude')  as HTMLButtonElement | null;
+  const btnGemini  = document.getElementById('btn-gemini')  as HTMLButtonElement | null;
+  const btnCopilot = document.getElementById('btn-copilot') as HTMLButtonElement | null;
+  const claudeBlocks  = document.querySelectorAll('[data-cli="claude"]');
+  const geminiBlocks  = document.querySelectorAll('[data-cli="gemini"]');
+  const copilotBlocks = document.querySelectorAll('[data-cli="copilot"]');
 
-  function selectCli(cli: 'claude' | 'gemini') {
-    const isClaude = cli === 'claude';
+  const btns = [btnClaude, btnGemini, btnCopilot] as const;
 
-    // Update active button styles
-    btnClaude?.classList.toggle('cli-btn--active', isClaude);
-    btnGemini?.classList.toggle('cli-btn--active', !isClaude);
+  function selectCli(cli: 'claude' | 'gemini' | 'copilot') {
+    const active = { claude: btnClaude, gemini: btnGemini, copilot: btnCopilot }[cli];
 
-    // Update ARIA state and roving tabindex
-    btnClaude?.setAttribute('aria-selected', String(isClaude));
-    btnGemini?.setAttribute('aria-selected', String(!isClaude));
-    btnClaude?.setAttribute('tabindex', isClaude ? '0' : '-1');
-    btnGemini?.setAttribute('tabindex', isClaude ? '-1' : '0');
+    btns.forEach(btn => {
+      const isActive = btn === active;
+      btn?.classList.toggle('cli-btn--active', isActive);
+      btn?.setAttribute('aria-selected', String(isActive));
+      btn?.setAttribute('tabindex', isActive ? '0' : '-1');
+    });
 
-    // Show / hide panels
-    claudeBlocks.forEach(el => el.classList.toggle('hidden', !isClaude));
-    geminiBlocks.forEach(el => el.classList.toggle('hidden', isClaude));
+    claudeBlocks.forEach(el  => el.classList.toggle('hidden', cli !== 'claude'));
+    geminiBlocks.forEach(el  => el.classList.toggle('hidden', cli !== 'gemini'));
+    copilotBlocks.forEach(el => el.classList.toggle('hidden', cli !== 'copilot'));
   }
 
-  btnClaude?.addEventListener('click', () => { selectCli('claude'); btnClaude.focus(); });
-  btnGemini?.addEventListener('click', () => { selectCli('gemini'); btnGemini.focus(); });
+  btnClaude?.addEventListener('click',  () => { selectCli('claude');  btnClaude.focus(); });
+  btnGemini?.addEventListener('click',  () => { selectCli('gemini');  btnGemini.focus(); });
+  btnCopilot?.addEventListener('click', () => { selectCli('copilot'); btnCopilot.focus(); });
 
-  // Keyboard navigation: ArrowRight / ArrowLeft between tabs
-  [btnClaude, btnGemini].forEach(btn => {
+  const cliOrder: ('claude' | 'gemini' | 'copilot')[] = ['claude', 'gemini', 'copilot'];
+  btns.forEach((btn, i) => {
     btn?.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') { selectCli('gemini'); btnGemini?.focus(); }
-      if (e.key === 'ArrowLeft')  { selectCli('claude'); btnClaude?.focus(); }
+      if (e.key === 'ArrowRight') {
+        const next = cliOrder[(i + 1) % cliOrder.length];
+        selectCli(next);
+        btns[(i + 1) % btns.length]?.focus();
+      }
+      if (e.key === 'ArrowLeft') {
+        const prev = cliOrder[(i + cliOrder.length - 1) % cliOrder.length];
+        selectCli(prev);
+        btns[(i + btns.length - 1) % btns.length]?.focus();
+      }
     });
   });
 </script>
