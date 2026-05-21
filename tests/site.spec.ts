@@ -72,11 +72,11 @@ test.describe('Structure', () => {
     await expect(page.locator('#quick-start')).toBeVisible();
   });
 
-  test('QuickStart: CLI toggle — 8 pre blocks total in DOM', async ({ page }) => {
+  test('QuickStart: CLI toggle — 7 pre blocks total in DOM', async ({ page }) => {
     await page.goto('./');
-    // Step 1 (clone) + step 2 Copilot prereq + steps 3-4 × 3 CLIs = 8 pre blocks in DOM
+    // Step 1 (clone) + steps 3-4 × 3 CLIs = 7 pre blocks in DOM
     const pres = page.locator('section#quick-start pre');
-    await expect(pres).toHaveCount(8);
+    await expect(pres).toHaveCount(7);
   });
 
   test('QuickStart: Claude tab active by default, Gemini and Copilot hidden', async ({ page }) => {
@@ -107,14 +107,6 @@ test.describe('Structure', () => {
     await expect(page.locator('#panel-copilot-4')).toBeVisible();
     await expect(page.locator('#panel-claude-3')).toBeHidden();
     await expect(page.locator('#panel-gemini-3')).toBeHidden();
-  });
-
-  test('QuickStart: GitHub Copilot tab shows prerequisite panel (panel-copilot-2)', async ({ page }) => {
-    await page.goto('./');
-    await page.click('#btn-copilot');
-    await expect(page.locator('#panel-copilot-2')).toBeVisible();
-    // The Copilot prereq panel must point at the standalone CLI, not the gh extension.
-    await expect(page.locator('#panel-copilot-2')).toContainText(/copilot/i);
   });
 
   // --- Regression tests for issue #12 ---------------------------------------
