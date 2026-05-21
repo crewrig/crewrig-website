@@ -41,7 +41,7 @@
               href="https://github.com/crewrig/crewrig#prerequisites"
               class="text-[#a5b4fc] underline underline-offset-2 transition hover:text-[#f0f0f6]"
             >README → Prerequisites</a> and install the required tools:<br />
-            <span class="mt-2 block text-[#a5b4fc]">Task &nbsp;·&nbsp; Gemini CLI or Claude Code &nbsp;·&nbsp; fzf &nbsp;·&nbsp; uv &nbsp;·&nbsp; yq</span>
+            <span class="mt-2 block text-[#a5b4fc]">Task &nbsp;·&nbsp; Claude Code, Gemini CLI, or GitHub Copilot CLI &nbsp;·&nbsp; fzf &nbsp;·&nbsp; uv &nbsp;·&nbsp; yq</span>
           </p>
         </div>
         <p class="mt-3 text-sm italic text-[#9090a8]">OS-specific install commands are in the README.</p>
@@ -71,11 +71,35 @@
             tabindex="-1"
             class="cli-btn border-l border-[#7c3aed]/30 px-4 py-2 text-sm font-semibold transition"
           >Gemini CLI</button>
+          <button
+            id="btn-copilot"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-copilot-2 panel-copilot-3 panel-copilot-4"
+            tabindex="-1"
+            class="cli-btn border-l border-[#7c3aed]/30 px-4 py-2 text-sm font-semibold transition"
+          >GitHub Copilot</button>
         </div>
       </div>
 
+      <!-- Step 2 addendum: Copilot prerequisite -->
+      <div id="panel-copilot-2" role="tabpanel" aria-labelledby="btn-copilot" class="hidden min-w-0" data-cli="copilot" data-aos="fade-up" data-aos-delay="150">
+        <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
+          Step 2 — GitHub Copilot prerequisite
+        </div>
+        <div class="overflow-hidden rounded-lg border border-[#7c3aed]/30 bg-[#0d0d14]">
+          <div class="flex items-center gap-2 border-b border-[#7c3aed]/20 bg-[#16161f] px-4 py-2">
+            <span class="h-3 w-3 rounded-full bg-red-500/70"></span>
+            <span class="h-3 w-3 rounded-full bg-yellow-500/70"></span>
+            <span class="h-3 w-3 rounded-full bg-green-500/70"></span>
+          </div>
+          <pre class="overflow-x-auto p-5 font-mono text-sm leading-relaxed text-[#a5b4fc]"><code>gh extension install github/gh-copilot</code></pre>
+        </div>
+        <p class="mt-3 text-sm italic text-[#9090a8]">Also install GitHub Copilot CLI before running the steps below.</p>
+      </div>
+
       <!-- Step 3: Initialize — Claude Code -->
-      <div id="panel-claude-3" class="min-w-0" data-cli="claude" data-aos="fade-up" data-aos-delay="300">
+      <div id="panel-claude-3" role="tabpanel" aria-labelledby="btn-claude" class="min-w-0" data-cli="claude" data-aos="fade-up" data-aos-delay="300">
         <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
           Step 3 — Initialize
         </div>
@@ -92,7 +116,7 @@ claude /init-soul</code></pre>
       </div>
 
       <!-- Step 3: Initialize — Gemini CLI -->
-      <div id="panel-gemini-3" class="hidden min-w-0" data-cli="gemini" data-aos="fade-up" data-aos-delay="300">
+      <div id="panel-gemini-3" role="tabpanel" aria-labelledby="btn-gemini" class="hidden min-w-0" data-cli="gemini" data-aos="fade-up" data-aos-delay="300">
         <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
           Step 3 — Initialize
         </div>
@@ -108,8 +132,25 @@ gemini "/init-soul"</code></pre>
         <p class="mt-3 text-sm italic text-[#9090a8]">Build your personal profile and customize the agent identity.</p>
       </div>
 
+      <!-- Step 3: Initialize — GitHub Copilot -->
+      <div id="panel-copilot-3" role="tabpanel" aria-labelledby="btn-copilot" class="hidden min-w-0" data-cli="copilot" data-aos="fade-up" data-aos-delay="300">
+        <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
+          Step 3 — Initialize
+        </div>
+        <div class="overflow-hidden rounded-lg border border-[#7c3aed]/30 bg-[#0d0d14]">
+          <div class="flex items-center gap-2 border-b border-[#7c3aed]/20 bg-[#16161f] px-4 py-2">
+            <span class="h-3 w-3 rounded-full bg-red-500/70"></span>
+            <span class="h-3 w-3 rounded-full bg-yellow-500/70"></span>
+            <span class="h-3 w-3 rounded-full bg-green-500/70"></span>
+          </div>
+          <pre class="overflow-x-auto p-5 font-mono text-sm leading-relaxed text-[#a5b4fc]"><code>gh copilot /init-personal-profile
+gh copilot /init-soul</code></pre>
+        </div>
+        <p class="mt-3 text-sm italic text-[#9090a8]">Build your personal profile and customize the agent identity. Run from the repo root so Copilot picks up <code class="text-[#a5b4fc]">.github/skills/</code>.</p>
+      </div>
+
       <!-- Step 4: Setup — Claude Code -->
-      <div id="panel-claude-4" class="min-w-0" data-cli="claude" data-aos="fade-up" data-aos-delay="400">
+      <div id="panel-claude-4" role="tabpanel" aria-labelledby="btn-claude" class="min-w-0" data-cli="claude" data-aos="fade-up" data-aos-delay="400">
         <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
           Step 4 — Setup
         </div>
@@ -125,7 +166,7 @@ gemini "/init-soul"</code></pre>
       </div>
 
       <!-- Step 4: Setup — Gemini CLI -->
-      <div id="panel-gemini-4" class="hidden min-w-0" data-cli="gemini" data-aos="fade-up" data-aos-delay="400">
+      <div id="panel-gemini-4" role="tabpanel" aria-labelledby="btn-gemini" class="hidden min-w-0" data-cli="gemini" data-aos="fade-up" data-aos-delay="400">
         <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
           Step 4 — Setup
         </div>
@@ -138,6 +179,22 @@ gemini "/init-soul"</code></pre>
           <pre class="overflow-x-auto p-5 font-mono text-sm leading-relaxed text-[#a5b4fc]"><code>task setup-gemini-interactive</code></pre>
         </div>
         <p class="mt-3 text-sm italic text-[#9090a8]">Deploys the shared config to your Gemini CLI harness.</p>
+      </div>
+
+      <!-- Step 4: Setup — GitHub Copilot -->
+      <div id="panel-copilot-4" role="tabpanel" aria-labelledby="btn-copilot" class="hidden min-w-0" data-cli="copilot" data-aos="fade-up" data-aos-delay="400">
+        <div class="mb-3 text-sm font-semibold uppercase tracking-wider text-[#a5b4fc]">
+          Step 4 — Setup
+        </div>
+        <div class="overflow-hidden rounded-lg border border-[#7c3aed]/30 bg-[#0d0d14]">
+          <div class="flex items-center gap-2 border-b border-[#7c3aed]/20 bg-[#16161f] px-4 py-2">
+            <span class="h-3 w-3 rounded-full bg-red-500/70"></span>
+            <span class="h-3 w-3 rounded-full bg-yellow-500/70"></span>
+            <span class="h-3 w-3 rounded-full bg-green-500/70"></span>
+          </div>
+          <pre class="overflow-x-auto p-5 font-mono text-sm leading-relaxed text-[#a5b4fc]"><code>task setup-copilot-interactive</code></pre>
+        </div>
+        <p class="mt-3 text-sm italic text-[#9090a8]">Deploys the shared config to your GitHub Copilot harness.</p>
       </div>
 
     </div>
@@ -165,37 +222,49 @@ gemini "/init-soul"</code></pre>
 </style>
 
 <script>
-  const btnClaude = document.getElementById('btn-claude') as HTMLButtonElement | null;
-  const btnGemini = document.getElementById('btn-gemini') as HTMLButtonElement | null;
-  const claudeBlocks = document.querySelectorAll('[data-cli="claude"]');
-  const geminiBlocks = document.querySelectorAll('[data-cli="gemini"]');
+  type CliKey = 'claude' | 'gemini' | 'copilot';
 
-  function selectCli(cli: 'claude' | 'gemini') {
-    const isClaude = cli === 'claude';
+  const tabs: { key: CliKey; btn: HTMLButtonElement | null; blocks: NodeListOf<Element> }[] = [
+    { key: 'claude',  btn: document.getElementById('btn-claude')  as HTMLButtonElement | null, blocks: document.querySelectorAll('[data-cli="claude"]') },
+    { key: 'gemini',  btn: document.getElementById('btn-gemini')  as HTMLButtonElement | null, blocks: document.querySelectorAll('[data-cli="gemini"]') },
+    { key: 'copilot', btn: document.getElementById('btn-copilot') as HTMLButtonElement | null, blocks: document.querySelectorAll('[data-cli="copilot"]') },
+  ];
 
-    // Update active button styles
-    btnClaude?.classList.toggle('cli-btn--active', isClaude);
-    btnGemini?.classList.toggle('cli-btn--active', !isClaude);
-
-    // Update ARIA state and roving tabindex
-    btnClaude?.setAttribute('aria-selected', String(isClaude));
-    btnGemini?.setAttribute('aria-selected', String(!isClaude));
-    btnClaude?.setAttribute('tabindex', isClaude ? '0' : '-1');
-    btnGemini?.setAttribute('tabindex', isClaude ? '-1' : '0');
-
-    // Show / hide panels
-    claudeBlocks.forEach(el => el.classList.toggle('hidden', !isClaude));
-    geminiBlocks.forEach(el => el.classList.toggle('hidden', isClaude));
+  function selectCli(key: CliKey) {
+    tabs.forEach(({ key: k, btn, blocks }) => {
+      const isActive = k === key;
+      btn?.classList.toggle('cli-btn--active', isActive);
+      btn?.setAttribute('aria-selected', String(isActive));
+      btn?.setAttribute('tabindex', isActive ? '0' : '-1');
+      blocks.forEach(el => el.classList.toggle('hidden', !isActive));
+    });
   }
 
-  btnClaude?.addEventListener('click', () => { selectCli('claude'); btnClaude.focus(); });
-  btnGemini?.addEventListener('click', () => { selectCli('gemini'); btnGemini.focus(); });
-
-  // Keyboard navigation: ArrowRight / ArrowLeft between tabs
-  [btnClaude, btnGemini].forEach(btn => {
+  tabs.forEach(({ key, btn }, i) => {
+    btn?.addEventListener('click', () => { selectCli(key); btn.focus(); });
     btn?.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') { selectCli('gemini'); btnGemini?.focus(); }
-      if (e.key === 'ArrowLeft')  { selectCli('claude'); btnClaude?.focus(); }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const next = tabs[(i + 1) % tabs.length];
+        selectCli(next.key);
+        next.btn?.focus();
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const prev = tabs[(i + tabs.length - 1) % tabs.length];
+        selectCli(prev.key);
+        prev.btn?.focus();
+      }
+      if (e.key === 'Home') {
+        e.preventDefault();
+        selectCli(tabs[0].key);
+        tabs[0].btn?.focus();
+      }
+      if (e.key === 'End') {
+        e.preventDefault();
+        selectCli(tabs[tabs.length - 1].key);
+        tabs[tabs.length - 1].btn?.focus();
+      }
     });
   });
 </script>

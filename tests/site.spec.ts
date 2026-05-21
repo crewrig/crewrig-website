@@ -72,20 +72,76 @@ test.describe('Structure', () => {
     await expect(page.locator('#quick-start')).toBeVisible();
   });
 
-  test('QuickStart: 4 steps with CLI toggle (5 code blocks total)', async ({ page }) => {
+  test('QuickStart: CLI toggle — 8 pre blocks total in DOM', async ({ page }) => {
     await page.goto('./');
-    // Steps 1-2 (CLI-agnostic) + steps 3-4 with claude+gemini variants = 5 pre blocks in DOM
+    // Step 1 (clone) + step 2 Copilot prereq + steps 3-4 × 3 CLIs = 8 pre blocks in DOM
     const pres = page.locator('section#quick-start pre');
-    await expect(pres).toHaveCount(5);
-    // Claude variant visible by default, Gemini hidden
+    await expect(pres).toHaveCount(8);
+  });
+
+  test('QuickStart: Claude tab active by default, Gemini and Copilot hidden', async ({ page }) => {
+    await page.goto('./');
     const claudeBlock = page.locator('section#quick-start [data-cli="claude"]').first();
     const geminiBlock = page.locator('section#quick-start [data-cli="gemini"]').first();
+    const copilotBlock = page.locator('section#quick-start [data-cli="copilot"]').first();
     await expect(claudeBlock).toBeVisible();
     await expect(geminiBlock).toBeHidden();
-    // Toggle to Gemini
+    await expect(copilotBlock).toBeHidden();
+  });
+
+  test('QuickStart: toggle to Gemini shows Gemini panels, hides Claude and Copilot', async ({ page }) => {
+    await page.goto('./');
     await page.click('#btn-gemini');
+    const claudeBlock = page.locator('section#quick-start [data-cli="claude"]').first();
+    const geminiBlock = page.locator('section#quick-start [data-cli="gemini"]').first();
+    const copilotBlock = page.locator('section#quick-start [data-cli="copilot"]').first();
     await expect(geminiBlock).toBeVisible();
     await expect(claudeBlock).toBeHidden();
+    await expect(copilotBlock).toBeHidden();
+  });
+
+  test('QuickStart: toggle to GitHub Copilot shows Copilot panels, hides Claude and Gemini', async ({ page }) => {
+    await page.goto('./');
+    await page.click('#btn-copilot');
+    await expect(page.locator('#panel-copilot-3')).toBeVisible();
+    await expect(page.locator('#panel-copilot-4')).toBeVisible();
+    await expect(page.locator('#panel-claude-3')).toBeHidden();
+    await expect(page.locator('#panel-gemini-3')).toBeHidden();
+  });
+
+  test('QuickStart: GitHub Copilot tab shows prerequisite panel (panel-copilot-2)', async ({ page }) => {
+    await page.goto('./');
+    await page.click('#btn-copilot');
+    await expect(page.locator('#panel-copilot-2')).toBeVisible();
+    await expect(page.locator('#panel-copilot-2')).toContainText('gh extension install github/gh-copilot');
+  });
+
+  test('QuickStart: ArrowRight on Copilot tab wraps back to Claude', async ({ page }) => {
+    await page.goto('./');
+    await page.click('#btn-copilot');
+    await page.locator('#btn-copilot').press('ArrowRight');
+    await expect(page.locator('#panel-claude-3')).toBeVisible();
+    await expect(page.locator('#panel-copilot-3')).toBeHidden();
+    await expect(page.locator('#btn-claude')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('QuickStart: ArrowLeft on Claude tab wraps to Copilot', async ({ page }) => {
+    await page.goto('./');
+    await page.locator('#btn-claude').press('ArrowLeft');
+    await expect(page.locator('#panel-copilot-3')).toBeVisible();
+    await expect(page.locator('#panel-claude-3')).toBeHidden();
+    await expect(page.locator('#btn-copilot')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('QuickStart: clicking a tab updates aria-selected', async ({ page }) => {
+    await page.goto('./');
+    await expect(page.locator('#btn-claude')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#btn-gemini')).toHaveAttribute('aria-selected', 'false');
+    await expect(page.locator('#btn-copilot')).toHaveAttribute('aria-selected', 'false');
+    await page.click('#btn-copilot');
+    await expect(page.locator('#btn-copilot')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#btn-claude')).toHaveAttribute('aria-selected', 'false');
+    await expect(page.locator('#btn-gemini')).toHaveAttribute('aria-selected', 'false');
   });
 
   test('Footer: logo image exists', async ({ page }) => {
