@@ -113,7 +113,55 @@ test.describe('Structure', () => {
     await page.goto('./');
     await page.click('#btn-copilot');
     await expect(page.locator('#panel-copilot-2')).toBeVisible();
-    await expect(page.locator('#panel-copilot-2')).toContainText('gh extension install github/gh-copilot');
+    // The Copilot prereq panel must point at the standalone CLI, not the gh extension.
+    await expect(page.locator('#panel-copilot-2')).toContainText(/copilot/i);
+  });
+
+  // --- Regression tests for issue #12 ---------------------------------------
+  // Three bugs in the Copilot tab of the QuickStart section:
+  //   1. Duplicate "Step 2" labels visible when Copilot tab is active.
+  //   2. Prereq instructs `gh extension install github/gh-copilot` instead of
+  //      the standalone GitHub Copilot CLI.
+  //   3. Init commands use `gh copilot /init-…` instead of the standalone
+  //      `copilot -i "/init-…"` syntax.
+
+  test('QuickStart Copilot tab: exactly one visible "Step 2" label (regression #12 — bug 1)', async ({ page }) => {
+    await page.goto('./');
+    await page.click('#btn-copilot');
+    const step2Labels = page.locator('section#quick-start *', { hasText: /^\s*Step 2\b/ });
+    // Count only the leaf elements that directly contain a "Step 2" text node
+    // and are visible — i.e. the section header tiles, not ancestor wrappers.
+    const visibleStep2 = await step2Labels.evaluateAll((nodes) =>
+      nodes.filter((n) => {
+        const direct = Array.from(n.childNodes)
+          .filter((c) => c.nodeType === Node.TEXT_NODE)
+          .map((c) => (c.textContent ?? '').trim())
+          .join(' ');
+        if (!/^Step 2\b/.test(direct)) return false;
+        const rect = (n as HTMLElement).getBoundingClientRect();
+        const style = window.getComputedStyle(n as HTMLElement);
+        return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+      }).length,
+    );
+    expect(visibleStep2).toBe(1);
+  });
+
+  test('QuickStart Copilot tab: no "gh extension install" command visible (regression #12 — bug 2)', async ({ page }) => {
+    await page.goto('./');
+    await page.click('#btn-copilot');
+    const quickStartText = await page.locator('section#quick-start').innerText();
+    expect(quickStartText).not.toContain('gh extension install');
+  });
+
+  test('QuickStart Copilot tab: init commands use standalone `copilot -i` syntax (regression #12 — bug 3)', async ({ page }) => {
+    await page.goto('./');
+    await page.click('#btn-copilot');
+    const panel3 = page.locator('#panel-copilot-3');
+    await expect(panel3).toBeVisible();
+    const text = (await panel3.innerText()).trim();
+    expect(text).toMatch(/copilot\s+-i\s+"\/init-personal-profile"/);
+    expect(text).toMatch(/copilot\s+-i\s+"\/init-soul"/);
+    expect(text).not.toMatch(/gh\s+copilot\s+\/init-/);
   });
 
   test('QuickStart: ArrowRight on Copilot tab wraps back to Claude', async ({ page }) => {
