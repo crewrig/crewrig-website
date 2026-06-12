@@ -1,0 +1,36 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { getAllPages } from '../../lib/docs-manifest';
+import { renderDoc } from '../../lib/render-doc';
+
+// Vendored Markdown bodies, imported raw at build time (no network). Keys are
+// repo-root-relative paths like `/src/../vendor/docs/adr/0010-...md`.
+const rawModules = import.meta.glob('../../../vendor/docs/**/*.md', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
+export function getStaticPaths() {
+  return getAllPages().map((page) => ({
+    params: { slug: page.slug },
+    props: { page },
+  }));
+}
+
+const { page } = Astro.props;
+
+// Resolve the vendored body for this page's repo-root path.
+// page.path is `docs/adr/0010-...md`; the glob key ends with the same suffix.
+const suffix = page.path.replace(/^docs\//, '/vendor/docs/');
+const key = Object.keys(rawModules).find((k) => k.endsWith(suffix));
+if (!key) {
+  throw new Error(`vendored body not found for ${page.path} (suffix ${suffix})`);
+}
+const raw = rawModules[key];
+const { html } = renderDoc(raw, page.path);
+---
+
+<DocsLayout title={page.title} activeSlug={page.slug}>
+  <Fragment set:html={html} />
+</DocsLayout>

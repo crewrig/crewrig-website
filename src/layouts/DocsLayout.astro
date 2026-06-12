@@ -1,0 +1,62 @@
+---
+import Layout from './Layout.astro';
+import { getSections } from '../lib/docs-manifest';
+
+interface Props {
+  title?: string;
+  /** Slug of the active page, e.g. `adr/0010-...`; used to highlight nav. */
+  activeSlug?: string;
+}
+
+const { title, activeSlug } = Astro.props;
+const sections = getSections();
+const pageTitle = title ? `${title} — CrewRig Docs` : 'CrewRig Docs';
+---
+
+<Layout title={pageTitle}>
+  <div class="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-12 sm:px-10 lg:flex-row lg:gap-12">
+    <!-- Sidebar: section -> pages, in manifest order (no client-side JS). -->
+    <aside class="lg:w-64 lg:shrink-0">
+      <nav aria-label="Documentation" class="lg:sticky lg:top-20">
+        <a
+          href="/docs"
+          class="mb-6 inline-block text-sm font-semibold uppercase tracking-widest text-[#9090a8] transition hover:text-[#f0f0f6]"
+        >Documentation</a>
+        {
+          sections.map((section) => (
+            <div class="mb-6">
+              <h2 class="mb-2 text-xs font-semibold uppercase tracking-wider text-[#7c3aed]">
+                {section.title}
+              </h2>
+              <ul class="space-y-1">
+                {section.pages.map((page) => (
+                  <li>
+                    <a
+                      href={`/docs/${page.slug}`}
+                      aria-current={page.slug === activeSlug ? 'page' : undefined}
+                      class:list={[
+                        'block rounded px-2 py-1 text-sm transition',
+                        page.slug === activeSlug
+                          ? 'bg-[#7c3aed]/15 font-medium text-[#f0f0f6]'
+                          : 'text-[#9090a8] hover:bg-[#7c3aed]/10 hover:text-[#f0f0f6]',
+                      ]}
+                    >
+                      {page.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </nav>
+    </aside>
+
+    <!-- Content column. -->
+    <main class="min-w-0 flex-1">
+      <article class="doc-content max-w-3xl">
+        <slot />
+      </article>
+    </main>
+  </div>
+</Layout>

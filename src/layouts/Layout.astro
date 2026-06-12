@@ -1,15 +1,21 @@
 ---
 import '../styles/global.css';
 import 'aos/dist/aos.css';
+import SiteHeader from '../components/SiteHeader.astro';
 
 interface Props {
   title?: string;
   description?: string;
+  /** Render the persistent site header above the slot. Defaults to true so
+   *  the header appears on both the marketing page and the docs section
+   *  (spec 0002 R8/R9). */
+  header?: boolean;
 }
 
 const {
   title = 'CrewRig — Multi-agent orchestration for everyday work',
   description = 'CrewRig is an opinionated multi-agent framework that turns a single ticket into a coordinated team of specialist AI agents.',
+  header = true,
 } = Astro.props;
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -44,6 +50,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </noscript>
   </head>
   <body class="bg-[#0d0d14] text-slate-100 antialiased font-sans">
+    {header && <SiteHeader />}
     <slot />
 
     <script>

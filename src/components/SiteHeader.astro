@@ -1,0 +1,33 @@
+---
+import { Image } from 'astro:assets';
+import logoSrc from '../assets/logo.png';
+---
+
+<header
+  class="sticky top-0 z-30 border-b border-[#7c3aed]/20 bg-[#0d0d14]/90 backdrop-blur supports-[backdrop-filter]:bg-[#0d0d14]/70"
+>
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 sm:px-10">
+    <a href="/" class="flex items-center gap-2" aria-label="CrewRig home">
+      <Image
+        src={logoSrc}
+        alt="CrewRig"
+        width={120}
+        height={78}
+        format="webp"
+        loading="eager"
+        class="h-7 w-auto"
+      />
+    </a>
+
+    <nav class="flex items-center gap-x-6 text-sm font-medium">
+      <a
+        href="/docs"
+        class="text-[#f0f0f6] transition hover:text-[#8b5cf6]"
+      >Docs</a>
+      <a
+        href="https://github.com/crewrig/crewrig"
+        class="text-[#9090a8] transition hover:text-[#f0f0f6]"
+      >Source</a>
+    </nav>
+  </div>
+</header>
