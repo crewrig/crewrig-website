@@ -41,6 +41,10 @@ const MANIFEST_PATHS = getManifestPathSet();
 
 const BLOB_BASE = `https://github.com/${pin.repo}/blob/${pin.ref}`;
 const RAW_BASE = `https://raw.githubusercontent.com/${pin.repo}/${pin.ref}`;
+// Repo web root, for relative targets that escape above the repo root — those
+// are not versioned files (e.g. `../../../../issues/80`); they belong to a
+// GitHub web route (issues/, pull/, …), so they must NOT carry a `blob/<ref>`.
+const REPO_WEB_BASE = `https://github.com/${pin.repo}`;
 
 /** Sentinel-keyed metadata block: `<!-- crewrig-doc: ... -->` (F4). */
 const METADATA_BLOCK = /<!--\s*crewrig-doc:[\s\S]*?-->/g;
@@ -88,6 +92,7 @@ function slugifyHeading(text: string): string {
 function resolveRepoPath(pagePath: string, target: string): {
   path: string;
   fragment: string;
+  escaped: boolean;
 } {
   const hashIndex = target.indexOf('#');
   const fragment = hashIndex >= 0 ? target.slice(hashIndex) : '';
@@ -97,12 +102,17 @@ function resolveRepoPath(pagePath: string, target: string): {
   // Start from the page's directory.
   const dirParts = pagePath.split('/').slice(0, -1);
   const parts = [...dirParts];
+  let escaped = false;
   for (const seg of queryless.split('/')) {
     if (seg === '' || seg === '.') continue;
-    if (seg === '..') parts.pop();
-    else parts.push(seg);
+    if (seg === '..') {
+      // A `..` applied at the repo root escapes the tree: the target is not a
+      // versioned file but a repo web route (issues/, pull/, …).
+      if (parts.length > 0) parts.pop();
+      else escaped = true;
+    } else parts.push(seg);
   }
-  return { path: parts.join('/'), fragment };
+  return { path: parts.join('/'), fragment, escaped };
 }
 
 /** True for targets that must be left untouched: absolute URLs / pure anchors. */
@@ -117,11 +127,15 @@ function isExternalOrAnchor(href: string): boolean {
 /** Rewrite one relative link href against the page path (F1). */
 function rewriteLink(href: string, pagePath: string): string {
   if (isExternalOrAnchor(href)) return href;
-  const { path, fragment } = resolveRepoPath(pagePath, href);
-  if (MANIFEST_PATHS.has(path)) {
+  const { path, fragment, escaped } = resolveRepoPath(pagePath, href);
+  if (!escaped && MANIFEST_PATHS.has(path)) {
     return `/docs/${pathToSlug(path)}${fragment}`;
   }
-  // Out of manifest, any extension -> absolute upstream blob URL at the ref.
+  // Escaped the repo tree -> a GitHub web route (issues/, pull/, …), not a file.
+  if (escaped) {
+    return `${REPO_WEB_BASE}/${path}${fragment}`;
+  }
+  // Out of manifest, in-tree file -> absolute upstream blob URL at the ref.
   return `${BLOB_BASE}/${path}${fragment}`;
 }
 

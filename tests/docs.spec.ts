@@ -85,6 +85,10 @@ test.describe('Docs section', () => {
       'article.doc-content a[href*="github.com"][href*="issues/80"]',
     );
     await expect(issuesLink.first()).toHaveCount(1);
+    // It must be the repo WEB route, not a broken blob/<ref>/issues/80 URL:
+    // a path that over-escapes the repo root is a web route, not a file.
+    const href = await issuesLink.first().getAttribute('href');
+    expect(href).toBe('https://github.com/crewrig/crewrig/issues/80');
   });
 
   test('no visible "{#" in heading text (F2)', async ({ page }) => {
