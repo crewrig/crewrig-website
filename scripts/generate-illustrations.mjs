@@ -116,17 +116,20 @@ async function main() {
   }
 
   for (const c of todo) {
-    const prompt = `${preamble}\n\n${c.illustration.prompt}`;
+    const prompt = `${preamble}\n\n${c.illustration.prompt}\n\nComposition: landscape, ${GENERATION_PARAMS.aspectRatio} aspect ratio.`;
     console.log(`\n→ Generating ${c.illustration.file} (${c.id})`);
 
-    const response = await ai.models.generateImages({
+    // gemini-*-flash-image (the "Nano Banana" family) is a Gemini model: image
+    // output comes back through generateContent as an inlineData part, NOT via
+    // the Imagen-only generateImages API. responseModalities must request IMAGE.
+    const response = await ai.models.generateContent({
       model: MODEL,
-      prompt,
-      config: { numberOfImages: 1, aspectRatio: GENERATION_PARAMS.aspectRatio },
+      contents: prompt,
+      config: { responseModalities: ['TEXT', 'IMAGE'] },
     });
 
-    const image = response?.generatedImages?.[0]?.image;
-    const bytes = image?.imageBytes;
+    const parts = response?.candidates?.[0]?.content?.parts ?? [];
+    const bytes = parts.find((p) => p.inlineData?.data)?.inlineData?.data;
     if (!bytes) {
       throw new Error(`${c.id}: model returned no image bytes`);
     }
