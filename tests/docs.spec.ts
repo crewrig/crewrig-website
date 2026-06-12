@@ -1,13 +1,18 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
-// Published section titles, in the framework's fixed manifest order
-// (docs/index.json on the pinned ref — 4 of 8 sections are populated).
-const SECTIONS_IN_ORDER = [
-  'Adoption',
-  'Lifecycle',
-  'Reference',
-  'Architecture & ADRs',
-];
+// Published section titles, in the vendored manifest's order. Derived from the
+// pinned snapshot (not hard-coded) so the assertion stays correct across
+// docs-pin.json bumps as upstream sections gain pages.
+const manifest = JSON.parse(
+  readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), '../vendor/docs/index.json'),
+    'utf8',
+  ),
+) as { sections: { title: string }[] };
+const SECTIONS_IN_ORDER = manifest.sections.map((s) => s.title);
 
 // A sample page that is NOT the publication-contract page: that page
 // legitimately documents the `crewrig-doc:` grammar in prose, so it is the
