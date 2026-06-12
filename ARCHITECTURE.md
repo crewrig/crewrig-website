@@ -14,9 +14,15 @@ case-by-case, scroll-driven animations.
 
 ## Non-goals
 
-- Multi-page navigation, blog, or docs site (lives in the main repo).
-- Auth, server logic, CMS integration.
+- Blog. Auth, server logic, CMS integration.
 - i18n. English only, per `AGENTS.md`.
+
+> **Reversed by spec 0002.** This file previously listed *"Multi-page
+> navigation, blog, or docs site (lives in the main repo)"* as a non-goal.
+> Spec 0002 overturns the docs-site half of that decision: crewrig.org now
+> serves a `/docs` section rendered from the framework's published
+> documentation. The content still lives in the framework repo — the site
+> only renders a pinned snapshot of it. See *Documentation section* below.
 
 ## Stack decisions
 
@@ -149,6 +155,89 @@ of** the build and committed; the build never calls an image service.
   scenario. It runs in CI (`npm run check:illustrations`) between the build
   and the test pass, and needs no TS toolchain — it parses filenames out of
   `cases.ts` statically.
+
+## Documentation section (spec 0002)
+
+`crewrig.org/docs` renders the framework's **published** core documentation —
+the same body of docs that lives in the CrewRig repo — pinned to a deliberate
+framework version, faithful, and JS-free.
+
+### Consumed contract
+
+The framework publishes `docs/index.json` (the manifest) and per-page Markdown
+bodies carrying a `<!-- crewrig-doc: ... -->` metadata block, per its
+publication contract (`docs/publication-contract.md`, framework spec 0027).
+The manifest shape is `{ version, sections[]{section,title,pages[]{title,path,nav_order}} }`;
+empty sections are omitted upstream. The site reads the manifest only — it
+never needs to know CrewRig's internal directory layout.
+
+### Vendoring, not build-time fetch
+
+The docs are **vendored** into the site repo by a manual sync script, so the
+build stays offline and deterministic (mirroring the illustration pipeline's
+build isolation) and the doc snapshot is reviewable in the PR diff.
+
+- **Pin record — `docs-pin.json`** (repo root). `{ repo, ref, fetched_at }`.
+  `ref` is a **merged `crewrig/main` commit SHA** (never a branch — a branch
+  would let the pinned content drift). This is the single source of truth for
+  the pinned version (spec 0002 R7); a version bump = edit `ref`, re-run the
+  sync, commit.
+- **Sync (manual) — `scripts/sync-docs.mjs`** (`npm run sync:docs`). Reads
+  `docs-pin.json`, fetches `docs/index.json` and each manifest page body from
+  the raw GitHub host at the pinned ref, writes them under `vendor/docs/<path>`
+  (the `docs/`-relative layout is preserved), and stamps `fetched_at`. The
+  framework repo is public — no auth. **Never wired into `npm run build`.**
+- **Integrity gate — `scripts/check-docs-sync.mjs`** (`npm run check:docs-sync`).
+  Bidirectional and network-free: every manifest `path` has a vendored file
+  and every vendored `*.md` is in the manifest; exit 1 on drift. Runs in CI in
+  `verify.yml` after `check:illustrations`, so a stale or partial snapshot is
+  caught without network.
+
+`vendor/docs/**` is **committed** (it is the rendered snapshot of record),
+unlike `dist/` and `node_modules/`.
+
+### Rendering
+
+- **`src/lib/docs-manifest.ts`** — typed loader for the vendored manifest.
+  Preserves manifest section order and page `nav_order`. Slug =
+  `path` minus the leading `docs/` minus `.md`
+  (`docs/adr/0010-x.md` -> `adr/0010-x`).
+- **`src/lib/render-doc.ts`** — renders a vendored Markdown string to static
+  HTML. **markdown-it** is used here rather than Astro's native remark/rehype
+  pipeline: the link/anchor rewriting needs the page's repo-root path threaded
+  through render plus direct token access, which is awkward to thread through
+  Astro's file-based Markdown integration. The renderer:
+  - strips the `crewrig-doc:` metadata block by keying on the sentinel, on the
+    raw Markdown before render (markdown-it passes HTML comments through
+    otherwise);
+  - rewrites **every** relative link (any extension): resolved against the
+    page's repo-root path, in-manifest targets become `/docs/<slug>`,
+    out-of-manifest targets become the absolute upstream
+    `https://github.com/.../blob/<ref>/<path>` URL — so neither 404s;
+  - honors Kramdown `{#explicit-id}` heading anchors (strips the literal
+    brace text and sets the heading id from it) so in-page `#id` links resolve;
+  - routes relative image targets through the same in/out classifier (to the
+    raw upstream URL) — defensive, no live images today;
+  - preserves fenced code blocks and auto-slugs normal heading anchors.
+- **Routes** — `src/pages/docs/index.astro` (the `/docs` landing: intro +
+  sidebar) and `src/pages/docs/[...slug].astro` (`getStaticPaths` from the
+  manifest, one route per page; the vendored body is imported raw via
+  `import.meta.glob(..., { query: '?raw' })` at build time and rendered through
+  `render-doc.ts`).
+- **`src/layouts/DocsLayout.astro`** — sidebar nav (section -> pages, in order)
+  plus content column. Styling is intentionally minimal (`.doc-content` prose
+  rules in `global.css`); detailed styling is parked per the spec's
+  `[USER-PARKED]` open question.
+
+### Persistent header
+
+`src/components/SiteHeader.astro` (logo + `Docs` link + source link) is
+rendered by `Layout.astro` above the slot on **every** page, so it appears on
+the marketing page and the docs section (R8/R9). `Layout.astro` gained a
+`header` prop (default `true`) so a page can opt out without redesigning the
+layout; `index.astro` (spec 0001) consumes the default and keeps its hero
+composition intact. The **no `base`** rule still holds — header links resolve
+from `/`.
 
 ## Verify workflow (CI)
 

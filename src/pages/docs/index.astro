@@ -1,0 +1,41 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { getSections } from '../../lib/docs-manifest';
+
+const sections = getSections();
+---
+
+<DocsLayout title="Documentation">
+  <h1 class="text-3xl font-bold tracking-tight text-[#f0f0f6]">
+    CrewRig documentation
+  </h1>
+  <p class="mt-4 text-lg text-[#9090a8]">
+    The framework's published core documentation, rendered from a pinned
+    CrewRig version. Pick a page from the navigation, or start with a section
+    below.
+  </p>
+
+  <div class="mt-10 space-y-8">
+    {
+      sections.map((section) => (
+        <section>
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-[#7c3aed]">
+            {section.title}
+          </h2>
+          <ul class="mt-3 space-y-2">
+            {section.pages.map((page) => (
+              <li>
+                <a
+                  href={`/docs/${page.slug}`}
+                  class="text-[#f0f0f6] underline decoration-[#7c3aed]/40 underline-offset-4 transition hover:decoration-[#8b5cf6]"
+                >
+                  {page.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+</DocsLayout>

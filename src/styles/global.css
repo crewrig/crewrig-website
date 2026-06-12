@@ -27,3 +27,70 @@ body {
 .section-wide {
   @apply mx-auto max-w-6xl;
 }
+
+/* Rendered documentation prose (spec 0002).
+   Minimal, readable styling on the dark theme; detailed treatment is parked
+   per the spec's [USER-PARKED] open question. */
+.doc-content {
+  @apply text-[#c8c8d8] leading-relaxed;
+}
+.doc-content h1 {
+  @apply mt-0 mb-6 text-3xl font-bold tracking-tight text-[#f0f0f6];
+}
+.doc-content h2 {
+  @apply mt-10 mb-3 border-b border-[#7c3aed]/15 pb-2 text-2xl font-semibold text-[#f0f0f6];
+}
+.doc-content h3 {
+  @apply mt-8 mb-2 text-xl font-semibold text-[#f0f0f6];
+}
+.doc-content h4 {
+  @apply mt-6 mb-2 text-lg font-semibold text-[#f0f0f6];
+}
+.doc-content h5,
+.doc-content h6 {
+  @apply mt-4 mb-2 font-semibold text-[#f0f0f6];
+}
+.doc-content p {
+  @apply my-4;
+}
+.doc-content a {
+  @apply text-[#8b5cf6] underline decoration-[#7c3aed]/40 underline-offset-2 transition hover:decoration-[#8b5cf6];
+}
+.doc-content ul {
+  @apply my-4 list-disc space-y-1 pl-6;
+}
+.doc-content ol {
+  @apply my-4 list-decimal space-y-1 pl-6;
+}
+.doc-content li > ul,
+.doc-content li > ol {
+  @apply my-1;
+}
+.doc-content blockquote {
+  @apply my-4 border-l-4 border-[#7c3aed]/40 pl-4 italic text-[#9090a8];
+}
+.doc-content code {
+  @apply rounded bg-[#16161f] px-1.5 py-0.5 font-mono text-sm text-[#e0d8f8];
+}
+.doc-content pre {
+  @apply my-5 overflow-x-auto rounded-lg border border-[#7c3aed]/15 bg-[#16161f] p-4 text-sm;
+}
+.doc-content pre code {
+  @apply bg-transparent p-0 text-[#c8c8d8];
+}
+.doc-content table {
+  @apply my-5 block w-full overflow-x-auto border-collapse text-sm;
+}
+.doc-content th,
+.doc-content td {
+  @apply border border-[#7c3aed]/20 px-3 py-2 text-left align-top;
+}
+.doc-content th {
+  @apply bg-[#16161f] font-semibold text-[#f0f0f6];
+}
+.doc-content hr {
+  @apply my-8 border-[#7c3aed]/20;
+}
+.doc-content img {
+  @apply my-4 max-w-full rounded;
+}

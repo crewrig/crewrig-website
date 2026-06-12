@@ -14,18 +14,22 @@
     "test": "playwright test",
     "generate:illustrations": "node scripts/generate-illustrations.mjs",
     "check:illustrations": "node scripts/check-illustrations.mjs",
+    "sync:docs": "node scripts/sync-docs.mjs",
+    "check:docs-sync": "node scripts/check-docs-sync.mjs",
     "lighthouse": "lighthouse https://crewrig.org --output=html --output-path=./lighthouse-report.html --view"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "aos": "^2.3.4",
     "astro": "^6.3.3",
+    "markdown-it": "^14.2.0",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
     "@google/genai": "^2.8.0",
     "@playwright/test": "^1.60.0",
     "@types/aos": "^3.0.8",
+    "@types/markdown-it": "^14.1.2",
     "lighthouse": "^13.3.0"
   }
 }
