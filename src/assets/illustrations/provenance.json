@@ -2,38 +2,58 @@
   "illustrations": [
     {
       "file": "authoring-sharing.png",
-      "prompt": "Lena at a large monitor, having just authored a single document, which fans out into three identical glowing copies flowing toward three labelled terminals (Claude Code, Gemini, Copilot). Marcus and Aisha lean in, recognizing it. Bright, collaborative daytime light with violet accents on the three output streams. Mood: the satisfaction of leverage — one effort, three destinations.",
-      "model": "PLACEHOLDER — pending gemini-3.1-flash-image-preview",
+      "prompt": "A single, coherent world: Quaymont's open-plan engineering office, shot in a warm photographic, cinematic style — realistic people, shallow depth of field, natural and practical lighting (desk lamps, evening window light, glass-wall reflections) rather than flat studio light. Across all five frames the same five recognizable individuals recur with stable wardrobe, build, and demeanour, so the viewer follows them from pain to resolution. The one stylized element is light as metaphor — layered panels, persistent memory drawers, fan-out streams, converging cards, a bridging ribbon — always rendered in the brand's violet accent (#7c3aed) against deep, low-key backgrounds so the illustrations sit naturally on the dark theme. Realism for the people and the room; restrained luminous abstraction for the CrewRig mechanism. Mood arc per case: muted, slightly weary 'problem' framing resolving into warm, composed 'solution' framing.\n\nLena at a large monitor, having just authored a single document, which fans out into three identical glowing copies flowing toward three labelled terminals (Claude Code, Gemini, Copilot). Marcus and Aisha lean in, recognizing it. Bright, collaborative daytime light with violet accents on the three output streams. Mood: the satisfaction of leverage — one effort, three destinations.\n\nComposition: landscape, 3:2 aspect ratio.",
+      "model": "gemini-3.1-flash-image-preview",
+      "region": "global",
       "date": "2026-06-12",
-      "placeholder": true
+      "seed": null,
+      "params": {
+        "aspectRatio": "3:2"
+      }
     },
     {
       "file": "harness-loop.png",
-      "prompt": "Tomas at a standup board covered in small recurring sticky-note frictions; in the resolution half, those scattered notes converge and resolve into a few clean, labelled issue cards, shared and visible to the whole team. The cast (Priya, Marcus, Lena) gathered loosely around. Cool morning office light warming as the clutter resolves; violet accent on the converged issue cards. Mood: the quiet relief of a mess finally becoming a shared list.",
-      "model": "PLACEHOLDER — pending gemini-3.1-flash-image-preview",
+      "prompt": "A single, coherent world: Quaymont's open-plan engineering office, shot in a warm photographic, cinematic style — realistic people, shallow depth of field, natural and practical lighting (desk lamps, evening window light, glass-wall reflections) rather than flat studio light. Across all five frames the same five recognizable individuals recur with stable wardrobe, build, and demeanour, so the viewer follows them from pain to resolution. The one stylized element is light as metaphor — layered panels, persistent memory drawers, fan-out streams, converging cards, a bridging ribbon — always rendered in the brand's violet accent (#7c3aed) against deep, low-key backgrounds so the illustrations sit naturally on the dark theme. Realism for the people and the room; restrained luminous abstraction for the CrewRig mechanism. Mood arc per case: muted, slightly weary 'problem' framing resolving into warm, composed 'solution' framing.\n\nTomas at a standup board covered in small recurring sticky-note frictions; in the resolution half, those scattered notes converge and resolve into a few clean, labelled issue cards, shared and visible to the whole team. The cast (Priya, Marcus, Lena) gathered loosely around. Cool morning office light warming as the clutter resolves; violet accent on the converged issue cards. Mood: the quiet relief of a mess finally becoming a shared list.\n\nComposition: landscape, 3:2 aspect ratio.",
+      "model": "gemini-3.1-flash-image-preview",
+      "region": "global",
       "date": "2026-06-12",
-      "placeholder": true
+      "seed": null,
+      "params": {
+        "aspectRatio": "3:2"
+      }
     },
     {
       "file": "layered-context.png",
-      "prompt": "Priya stands at a glass wall in a quiet open-plan office, arranging translucent, stacked horizontal panels of light (suggesting layered config), each panel faintly labelled. Marcus and Lena are visible at desks in soft background focus. Evening light, warm key light on Priya, the layered panels glowing in violet. Mood: composed, in-control, the moment a system clicks into order.",
-      "model": "PLACEHOLDER — pending gemini-3.1-flash-image-preview",
+      "prompt": "A single, coherent world: Quaymont's open-plan engineering office, shot in a warm photographic, cinematic style — realistic people, shallow depth of field, natural and practical lighting (desk lamps, evening window light, glass-wall reflections) rather than flat studio light. Across all five frames the same five recognizable individuals recur with stable wardrobe, build, and demeanour, so the viewer follows them from pain to resolution. The one stylized element is light as metaphor — layered panels, persistent memory drawers, fan-out streams, converging cards, a bridging ribbon — always rendered in the brand's violet accent (#7c3aed) against deep, low-key backgrounds so the illustrations sit naturally on the dark theme. Realism for the people and the room; restrained luminous abstraction for the CrewRig mechanism. Mood arc per case: muted, slightly weary 'problem' framing resolving into warm, composed 'solution' framing.\n\nPriya stands at a glass wall in a quiet open-plan office, arranging translucent, stacked horizontal panels of light (suggesting layered config), each panel faintly labelled. Marcus and Lena are visible at desks in soft background focus. Evening light, warm key light on Priya, the layered panels glowing in violet. Mood: composed, in-control, the moment a system clicks into order.\n\nComposition: landscape, 3:2 aspect ratio.",
+      "model": "gemini-3.1-flash-image-preview",
+      "region": "global",
       "date": "2026-06-12",
-      "placeholder": true
+      "seed": null,
+      "params": {
+        "aspectRatio": "3:2"
+      }
     },
     {
       "file": "multi-cli-parity.png",
-      "prompt": "Aisha at a multi-monitor setup, the three CLIs open side by side, the same glowing configuration bridging across all three screens as one continuous ribbon of light. The rest of the cast visible deeper in the office, tying the series together. Evening, focused, three screens lit, a single violet thread connecting them. Mood: fluency and freedom — one context, any tool.",
-      "model": "PLACEHOLDER — pending gemini-3.1-flash-image-preview",
+      "prompt": "A single, coherent world: Quaymont's open-plan engineering office, shot in a warm photographic, cinematic style — realistic people, shallow depth of field, natural and practical lighting (desk lamps, evening window light, glass-wall reflections) rather than flat studio light. Across all five frames the same five recognizable individuals recur with stable wardrobe, build, and demeanour, so the viewer follows them from pain to resolution. The one stylized element is light as metaphor — layered panels, persistent memory drawers, fan-out streams, converging cards, a bridging ribbon — always rendered in the brand's violet accent (#7c3aed) against deep, low-key backgrounds so the illustrations sit naturally on the dark theme. Realism for the people and the room; restrained luminous abstraction for the CrewRig mechanism. Mood arc per case: muted, slightly weary 'problem' framing resolving into warm, composed 'solution' framing.\n\nAisha at a multi-monitor setup, the three CLIs open side by side, the same glowing configuration bridging across all three screens as one continuous ribbon of light. The rest of the cast visible deeper in the office, tying the series together. Evening, focused, three screens lit, a single violet thread connecting them. Mood: fluency and freedom — one context, any tool.\n\nComposition: landscape, 3:2 aspect ratio.",
+      "model": "gemini-3.1-flash-image-preview",
+      "region": "global",
       "date": "2026-06-12",
-      "placeholder": true
+      "seed": null,
+      "params": {
+        "aspectRatio": "3:2"
+      }
     },
     {
       "file": "shared-memory.png",
-      "prompt": "Marcus at his desk in the evening, packing up to leave, laptop half-closed. Behind him, a warm glowing archive of memory — drawers of light receding into depth, persisting after he's gone — instead of the usual fade-to-black of a closed session. Lena, at a nearby desk, has the same glow reaching toward her screen. Violet accent on the memory structure, warm desk lamps. Mood: continuity, relief, knowledge that stays.",
-      "model": "PLACEHOLDER — pending gemini-3.1-flash-image-preview",
+      "prompt": "A single, coherent world: Quaymont's open-plan engineering office, shot in a warm photographic, cinematic style — realistic people, shallow depth of field, natural and practical lighting (desk lamps, evening window light, glass-wall reflections) rather than flat studio light. Across all five frames the same five recognizable individuals recur with stable wardrobe, build, and demeanour, so the viewer follows them from pain to resolution. The one stylized element is light as metaphor — layered panels, persistent memory drawers, fan-out streams, converging cards, a bridging ribbon — always rendered in the brand's violet accent (#7c3aed) against deep, low-key backgrounds so the illustrations sit naturally on the dark theme. Realism for the people and the room; restrained luminous abstraction for the CrewRig mechanism. Mood arc per case: muted, slightly weary 'problem' framing resolving into warm, composed 'solution' framing.\n\nMarcus at his desk in the evening, packing up to leave, laptop half-closed. Behind him, a warm glowing archive of memory — drawers of light receding into depth, persisting after he's gone — instead of the usual fade-to-black of a closed session. Lena, at a nearby desk, has the same glow reaching toward her screen. Violet accent on the memory structure, warm desk lamps. Mood: continuity, relief, knowledge that stays.\n\nComposition: landscape, 3:2 aspect ratio.",
+      "model": "gemini-3.1-flash-image-preview",
+      "region": "global",
       "date": "2026-06-12",
-      "placeholder": true
+      "seed": null,
+      "params": {
+        "aspectRatio": "3:2"
+      }
     }
   ]
 }

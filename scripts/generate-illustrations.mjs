@@ -29,11 +29,11 @@ const ILLUSTRATIONS_DIR = join(ROOT, 'src/assets/illustrations');
 const PROVENANCE_PATH = join(ILLUSTRATIONS_DIR, 'provenance.json');
 const STYLE_PATH = join(ILLUSTRATIONS_DIR, 'STYLE.md');
 
-// TODO: confirm `gemini-3.1-flash-image-preview` is served in this region
-// before the first real run; image-preview models are region-gated and the
-// availability set changes between previews.
+// Gemini 3.x image-preview models are served on the Vertex `global` endpoint,
+// not on regional ones (a regional call 404s). Override with GOOGLE_CLOUD_LOCATION
+// if the availability set changes between previews.
 const MODEL = 'gemini-3.1-flash-image-preview';
-const REGION = 'us-central1';
+const REGION = process.env.GOOGLE_CLOUD_LOCATION || 'global';
 
 /** Reproducibility knobs recorded verbatim in provenance. */
 const GENERATION_PARAMS = {
@@ -122,11 +122,27 @@ async function main() {
     // gemini-*-flash-image (the "Nano Banana" family) is a Gemini model: image
     // output comes back through generateContent as an inlineData part, NOT via
     // the Imagen-only generateImages API. responseModalities must request IMAGE.
-    const response = await ai.models.generateContent({
-      model: MODEL,
-      contents: prompt,
-      config: { responseModalities: ['TEXT', 'IMAGE'] },
-    });
+    // Preview image models are tightly rate-limited; retry 429s with backoff
+    // so a single throttle does not abort a multi-image run partway through.
+    let response;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        response = await ai.models.generateContent({
+          model: MODEL,
+          contents: prompt,
+          config: { responseModalities: ['TEXT', 'IMAGE'] },
+        });
+        break;
+      } catch (err) {
+        if (err?.status === 429 && attempt <= 4) {
+          const wait = attempt * 20000;
+          console.log(`  rate-limited (429); retrying in ${wait / 1000}s (attempt ${attempt}/4)`);
+          await new Promise((r) => setTimeout(r, wait));
+          continue;
+        }
+        throw err;
+      }
+    }
 
     const parts = response?.candidates?.[0]?.content?.parts ?? [];
     const bytes = parts.find((p) => p.inlineData?.data)?.inlineData?.data;
@@ -147,6 +163,10 @@ async function main() {
       seed: null,
       params: GENERATION_PARAMS,
     });
+
+    // Persist provenance after each image so a mid-run failure (e.g. a 429 on a
+    // later image) never leaves an already-written PNG without its entry.
+    await writeFile(PROVENANCE_PATH, JSON.stringify(provenance, null, 2) + '\n');
   }
 
   await writeFile(
