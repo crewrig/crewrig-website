@@ -11,7 +11,10 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "playwright test"
+    "test": "playwright test",
+    "generate:illustrations": "node scripts/generate-illustrations.mjs",
+    "check:illustrations": "node scripts/check-illustrations.mjs",
+    "lighthouse": "lighthouse https://crewrig.org --output=html --output-path=./lighthouse-report.html --view"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
@@ -20,6 +23,7 @@
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
+    "@google/genai": "^2.8.0",
     "@playwright/test": "^1.60.0",
     "@types/aos": "^3.0.8",
     "lighthouse": "^13.3.0"

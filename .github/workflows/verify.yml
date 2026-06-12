@@ -1,0 +1,37 @@
+name: Verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Build, check illustrations, and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # Build before tests: Playwright's webServer runs `npm run preview`, which
+      # serves `dist/` — the build output must exist first.
+      - name: Build
+        run: npm run build
+
+      - name: Check illustrations
+        run: npm run check:illustrations
+
+      - name: Test
+        run: npm test

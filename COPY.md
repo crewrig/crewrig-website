@@ -1,106 +1,130 @@
 # CrewRig Website Copy
 
-## Section 1 — Hero
+The page is a single-page narrative: an opening, five problem-to-solution
+cases, a getting-started call to action, and a closing. The five cases follow
+a recurring cast at **Quaymont** (a logistics-software company, ~80 engineers)
+from pain point to resolution, and collectively cover CrewRig's five pillars.
 
-**Badge / tagline:** Open source · Works with Claude Code, Gemini CLI & GitHub Copilot
-
-**Headline:** AI configuration that scales with your team — not just with you.
-
-**Sub-headline:** Stop re-explaining your context to your AI. Build it once, share it with your whole team.
-
-**Primary CTA:** Fork on GitHub →
-
-**Secondary CTA:** Quick Start ↓
+This file is the content source of record. The machine-readable model that the
+site actually renders lives in `src/data/cases.ts`; if the two diverge,
+`cases.ts` wins. The illustration briefs are mirrored in
+`src/assets/illustrations/STYLE.md`.
 
 ---
 
-## Section 2 — Problem
+## Hero (opening)
 
-**Section title:** The AI productivity gap is a team problem.
+**Badge:** Open source · Works with Claude Code, Gemini CLI & GitHub Copilot CLI
 
-### Card 1
-- **Icon:** 🧩 Scattered puzzle pieces
-- **Title:** Everyone configures alone
-- **Description:** Each developer wires up their own system prompts and personas. The same setup work happens N times — and N times, slightly differently.
+**Headline:** Your team's AI context, built once — not rebuilt by everyone.
 
-### Card 2
-- **Icon:** 🚪 Door closing behind a silhouette
-- **Title:** Context walks out the door
-- **Description:** Personas, system prompts, and hard-won workflows live in someone's dotfiles. When that engineer leaves, so does the institutional knowledge their AI was carrying.
+**Sub-headline:** CrewRig is a shared configuration layer for AI coding agents.
+Profile, conventions, skills, and memory live in one repo, deploy to every CLI,
+and get sharper the more your team uses them.
 
-### Card 3
-- **Icon:** 🤖 Robot reading a blank page
-- **Title:** Your AI is a stranger to your codebase
-- **Description:** The model has never seen your conventions, your modules, or the trade-offs your team already settled three quarters ago. Every session re-litigates the basics.
+**Primary CTA:** Fork on GitHub → (https://github.com/crewrig/crewrig)
+
+**Secondary CTA:** See how it works ↓ (anchors to the first case)
 
 ---
 
-## Section 3 — Insight
+## Case 1 — Layered context
 
-**Section title:** Power without coordination is noise.
+**Title:** The AI that forgets who it's working with
+**Persona:** Priya Nair — staff engineer, platform team
 
-**Body:** Individual AI tooling is zero-sum. Ten developers each iterating on their own system prompts produces ten versions of the same wheel — and zero compounding gains. The teams pulling ahead aren't the ones with smarter models. They're the ones with a shared layer underneath. Like a git history for system prompts: everyone contributes, everyone inherits.
+**Problem:** Every engineer on Priya's squad starts each AI session from zero.
+The model doesn't know their stack, their review rituals, or that the team
+settled on a pattern three quarters ago. Priya ends up re-explaining the same
+conventions in prompt after prompt — and each teammate explains them slightly
+differently, so the AI behaves slightly differently for everyone.
 
----
-
-## Section 4 — Solution
-
-**Section title:** Three layers. One coherent stack.
-
-### Pillar 1 — System prompt layers
-**Title:** Layered system prompts
-**Description:** Personal profile, team norms, expertise, and seniority — structured into a coherent context your AI loads automatically. Configurable per person, shared across your team.
-
-### Pillar 2 — Community zone
-**Title:** Shared skills and agents
-**Description:** A collaborative sandbox where your team builds and shares reusable skills, custom commands, and agent personas — written once, installed anywhere.
-
-### Pillar 3 — Harness loop
-**Title:** The framework learns from use
-**Description:** When an agent hits friction, it tags it. A curator clusters the signals, files issues, and ships fixes back into the shared config. Every workflow papercut becomes a permanent improvement.
+**Solution:** CrewRig stacks configuration into priority-ordered layers
+(00–60): agent identity, seniority, organization policy, personal profile, role
+expertise, and team norms. Each engineer's profile is personal; the team and
+expertise layers are shared. The agent loads the full context automatically, so
+it arrives already knowing how Priya's team works — and behaves consistently
+for everyone who inherits the same layers.
 
 ---
 
-## Section 5 — How it works
+## Case 2 — Shared cross-tool memory
 
-**Section title:** Six steps. Then it compounds.
+**Title:** The context that walks out the door
+**Persona:** Marcus Bell — senior backend engineer
 
-1. **Fork** — Clone the CrewRig template into your team's GitHub org.
-2. **Profile** — Drop in your team's stack, conventions, and review rituals.
-3. **Deploy** — One script compiles the config into Claude Code, Gemini CLI, GitHub Copilot, and every supported harness.
-4. **Share** — Push to main. Every developer's next session inherits the update.
-5. **Improve** — Agents report friction; the curator turns signals into fixes.
-6. **∞** — Every friction your team tags becomes a ticket. Automatically.
+**Problem:** Marcus has spent months teaching his agent the quirks of
+Quaymont's freight-routing service — the edge cases, the workarounds, the
+reasons behind odd decisions. But all of it lives in his local session history.
+When he switches machines, or a teammate picks up the service, that hard-won
+context is gone, and the next agent starts blind.
 
----
-
-## Section 6 — Features
-
-**Section title:** Built for teams that ship.
-
-### Card 1
-- **Title:** Layered context, no conflicts
-- **Description:** Personal, community, and project rules merge in a predictable order. Nobody's personal preferences ever leak into the team config — and the team config never overrides someone's local setup.
-
-### Card 2
-- **Title:** Reusable skills, on tap
-- **Description:** A growing library of community-authored agent skills your team can import and customize. The capability you needed last week is probably already written.
-
-### Card 3
-- **Title:** Friction becomes fuel
-- **Description:** A built-in feedback loop captures the rough edges agents encounter in real work, curates them, and ships fixes back to the shared layer. Your config gets sharper every sprint.
-
-### Card 4
-- **Title:** Tool-agnostic by design
-- **Description:** Write the config once; ship it to Claude Code, Gemini CLI, and GitHub Copilot today, with more harnesses landing. Switching tools no longer means rewriting your system prompt library.
-
-### Card 5
-- **Title:** Secrets stay where they belong
-- **Description:** Credentials, tokens, and private data never enter the shared layer or travel to the model. Least-privilege defaults, vault-friendly, GDPR-aware out of the box.
+**Solution:** CrewRig wires agents into MemPalace, a persistent memory layer
+that survives across sessions and across tools. What an agent learns in one
+session — decisions, obstacles, the reasoning behind a fix — is written once and
+readable later, by Marcus or by a teammate's agent, whether they're on Claude
+Code, Gemini CLI, or Copilot.
 
 ---
 
-## Section 7 — Quick Start
+## Case 3 — Skill, agent, and command authoring & sharing
+
+**Title:** Written once, somehow rewritten three times
+**Persona:** Lena Ostrowski — mid-level full-stack engineer
+
+**Problem:** Lena writes a genuinely useful agent skill — a review helper tuned
+to the team's conventions. A week later she finds Marcus has built almost the
+same thing for Gemini CLI, because hers only worked in Claude Code. The
+capability the team needed already existed; it just couldn't travel.
+
+**Solution:** In CrewRig, skills, agents, and commands are authored once as a
+single Markdown file in artifacts/. One build step
+(scripts/build-components.sh) compiles that source into outputs for Claude Code,
+Gemini CLI, and GitHub Copilot CLI. Lena writes the skill one time; her
+teammates install it on any supported CLI.
+
+---
+
+## Case 4 — Harness feedback loop
+
+**Title:** The papercut that never gets fixed
+**Persona:** Tomas Reyes — engineering lead
+
+**Problem:** Tomas watches his squad hit the same small frictions with their AI
+tooling week after week — a misleading prompt, a tool that does the wrong thing,
+a workflow step that's gone stale. Everyone grumbles in standup; nobody files
+it; the rough edge survives forever because reporting it costs more than working
+around it.
+
+**Solution:** CrewRig builds the feedback loop in. When an agent hits friction
+during real work, it tags it via the harness-report skill into a shared store.
+The harness-curator then clusters those tags by theme and opens one GitHub issue
+per cluster. And because each fix ships back into the shared config, one
+engineer's papercut becomes everyone's improvement — the whole team's tooling
+gets sharper from each person's friction, instead of everyone routing around the
+same wall alone.
+
+---
+
+## Case 5 — Multi-CLI parity
+
+**Title:** Switch the tool, rebuild everything
+**Persona:** Aisha Diallo — DevX / tooling engineer
+
+**Problem:** Aisha moves between Claude Code, Gemini CLI, and Copilot depending
+on the task. Without a shared layer, each tool is its own island: her profile,
+her skills, her team's conventions all have to be rebuilt per CLI. Trying a
+different tool means rewriting her whole setup — so in practice, nobody does.
+
+**Solution:** CrewRig holds one source configuration in config/ and artifacts/,
+and its setup and build scripts deploy it into each CLI's own directory. The
+same layered context and the same skills run on Claude Code, Gemini CLI, and
+GitHub Copilot CLI. Aisha switches tools without rebuilding her setup — the
+context follows her.
+
+---
+
+## Quick Start (getting-started call to action)
 
 **Section title:** Up and running in minutes.
 **Sub-title:** No accounts, no SaaS, no waiting list.
@@ -112,16 +136,11 @@ git clone https://github.com/crewrig/crewrig.git
 *Get a local copy of the framework.*
 
 ### Step 2 — Install prerequisites
-Read the [README → Prerequisites](https://github.com/crewrig/crewrig#prerequisites) and install the required tools:
-Task · Gemini CLI or Claude Code · fzf · uv · yq
+Read the [README → Prerequisites](https://github.com/crewrig/crewrig#prerequisites)
+and install the required tools:
+Task · Claude Code, Gemini CLI, or GitHub Copilot CLI · fzf · uv · yq
 
 *OS-specific install commands are in the README.*
-
-#### GitHub Copilot prerequisite
-Also install GitHub Copilot CLI:
-```bash
-gh extension install github/gh-copilot
-```
 
 ### Step 3 — Initialize (Claude Code)
 ```bash
@@ -134,27 +153,19 @@ claude /init-soul
 gemini "/init-personal-profile"
 gemini "/init-soul"
 ```
-*Build your personal profile and customize the agent identity.*
 
 ### Step 3 — Initialize (GitHub Copilot)
 ```bash
-gh copilot /init-personal-profile
-gh copilot /init-soul
+copilot -i "/init-personal-profile"
+copilot -i "/init-soul"
 ```
-*Build your personal profile and customize the agent identity. Run from the repo root so Copilot picks up `.github/skills/`.*
+*Build your personal profile and customize the agent identity. Run from the
+repo root so Copilot picks up `.github/skills/`.*
 
-### Step 4 — Setup (Claude Code)
+### Step 4 — Setup (Claude Code / Gemini CLI / GitHub Copilot)
 ```bash
 task setup-claude-interactive
-```
-
-### Step 4 — Setup (Gemini CLI)
-```bash
 task setup-gemini-interactive
-```
-
-### Step 4 — Setup (GitHub Copilot)
-```bash
 task setup-copilot-interactive
 ```
 *Deploys the shared config to your harness.*
@@ -163,7 +174,7 @@ task setup-copilot-interactive
 
 ---
 
-## Section 8 — Footer
+## Footer (closing)
 
 **Tagline:** Your team's AI, finally on the same page.
 

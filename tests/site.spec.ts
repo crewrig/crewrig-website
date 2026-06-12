@@ -1,5 +1,14 @@
 import { test, expect } from '@playwright/test';
 
+// Persona names, in case order — must match src/data/cases.ts.
+const PERSONAS = [
+  'Priya Nair',
+  'Marcus Bell',
+  'Lena Ostrowski',
+  'Tomas Reyes',
+  'Aisha Diallo',
+];
+
 test.describe('Structure', () => {
   test('page loads with HTTP 200', async ({ page }) => {
     const res = await page.goto('./');
@@ -26,51 +35,58 @@ test.describe('Structure', () => {
     expect(href).toContain('github.com/crewrig/crewrig');
   });
 
-  test('Hero: Quick Start link points to #quick-start', async ({ page }) => {
+  test('Hero: "See how it works" link anchors to the first case', async ({ page }) => {
     await page.goto('./');
-    const qs = page.locator('section#hero a', { hasText: /Quick Start/i });
-    await expect(qs).toBeVisible();
-    const href = await qs.getAttribute('href');
-    expect(href).toContain('#quick-start');
+    const cta = page.locator('section#hero a', { hasText: /See how it works/i });
+    await expect(cta).toBeVisible();
+    const href = await cta.getAttribute('href');
+    expect(href).toContain('#case-');
   });
 
-  test('Problem section: exactly 3 cards', async ({ page }) => {
+  // --- Five-case narrative ---------------------------------------------------
+
+  test('exactly five case sections render', async ({ page }) => {
     await page.goto('./');
-    const cards = page.locator('section#problem article');
-    await expect(cards).toHaveCount(3);
+    await expect(page.locator('[data-testid="case"]')).toHaveCount(5);
   });
 
-  test('Insight section: non-empty statement', async ({ page }) => {
+  test('each case section carries an image and its persona name', async ({ page }) => {
     await page.goto('./');
-    const h2 = page.locator('section#insight h2');
-    await expect(h2).toBeVisible();
-    expect((await h2.textContent())?.trim().length).toBeGreaterThan(0);
+    const cases = page.locator('[data-testid="case"]');
+    await expect(cases).toHaveCount(5);
+    const count = await cases.count();
+    for (let i = 0; i < count; i++) {
+      const section = cases.nth(i);
+      // Exactly one illustration per case.
+      await expect(section.locator('img')).toHaveCount(1);
+      // The matching persona name appears in the case body.
+      await expect(section).toContainText(PERSONAS[i]);
+    }
   });
 
-  test('Solution section: exactly 3 pillar cards', async ({ page }) => {
+  test('the five pillar personas all appear, each once', async ({ page }) => {
     await page.goto('./');
-    const cards = page.locator('section#solution article');
-    await expect(cards).toHaveCount(3);
+    for (const name of PERSONAS) {
+      await expect(page.getByText(name, { exact: false })).toHaveCount(1);
+    }
   });
 
-  test('HowItWorks: 6 steps', async ({ page }) => {
-    await page.goto('./');
-    const steps = page.locator('section#how-it-works ol > li');
-    await expect(steps).toHaveCount(6);
-    // last step contains ∞
-    await expect(steps.last()).toContainText('∞');
-  });
-
-  test('FeaturesGrid: 5 feature cards', async ({ page }) => {
-    await page.goto('./');
-    const cards = page.locator('section#features article');
-    await expect(cards).toHaveCount(5);
-  });
+  // --- Getting-started CTA ---------------------------------------------------
 
   test('QuickStart section exists with id', async ({ page }) => {
     await page.goto('./');
     await expect(page.locator('#quick-start')).toBeVisible();
   });
+
+  test('getting-started CTA is present', async ({ page }) => {
+    await page.goto('./');
+    const cta = page.locator('section#quick-start a', { hasText: /View on GitHub/i });
+    await expect(cta).toBeVisible();
+    const href = await cta.getAttribute('href');
+    expect(href).toContain('github.com/crewrig/crewrig');
+  });
+
+  // --- QuickStart CLI-toggle tests (PRESERVED — regression #12) ---------------
 
   test('QuickStart: CLI toggle — 7 pre blocks total in DOM', async ({ page }) => {
     await page.goto('./');
@@ -220,15 +236,26 @@ test.describe('Responsive', () => {
       }));
       expect(scrollWidth).toBeLessThanOrEqual(innerWidth + 1);
     });
+
+    test(`${name} (${width}x${height}): five cases render with personas`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto('./');
+      const cases = page.locator('[data-testid="case"]');
+      await expect(cases).toHaveCount(5);
+      for (let i = 0; i < PERSONAS.length; i++) {
+        await expect(cases.nth(i).locator('img')).toHaveCount(1);
+        await expect(cases.nth(i)).toContainText(PERSONAS[i]);
+      }
+    });
   }
 });
 
 test.describe('Navigation', () => {
-  test('Quick Start CTA scrolls to #quick-start', async ({ page }) => {
+  test('"See how it works" CTA scrolls to the first case', async ({ page }) => {
     await page.goto('./');
-    await page.locator('section#hero a', { hasText: /Quick Start/i }).click();
-    await expect(page).toHaveURL(/#quick-start$/);
-    const target = page.locator('#quick-start');
+    await page.locator('section#hero a', { hasText: /See how it works/i }).click();
+    await expect(page).toHaveURL(/#case-/);
+    const target = page.locator('[data-testid="case"]').first();
     await expect(target).toBeInViewport();
   });
 });

@@ -1,23 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
-import Problem from '../components/Problem.astro';
-import Insight from '../components/Insight.astro';
-import Solution from '../components/Solution.astro';
-import HowItWorks from '../components/HowItWorks.astro';
-import FeaturesGrid from '../components/FeaturesGrid.astro';
+import Case from '../components/Case.astro';
 import QuickStart from '../components/QuickStart.astro';
 import Footer from '../components/Footer.astro';
+import { cases } from '../data/cases';
 ---
 
 <Layout>
   <main>
     <Hero />
-    <Problem />
-    <Insight />
-    <Solution />
-    <HowItWorks />
-    <FeaturesGrid />
+    {cases.map((c, i) => <Case case={c} index={i} />)}
     <QuickStart />
   </main>
   <Footer />

@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import logoSrc from '../assets/logo.png';
+import { hero } from '../data/cases';
 ---
 
 <section
@@ -33,7 +34,7 @@ import logoSrc from '../assets/logo.png';
     class="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-[#f0f0f6] sm:text-5xl lg:text-6xl"
     data-aos="fade-up"
   >
-    AI configuration that scales with your team — not just with you.
+    {hero.headline}
   </h1>
 
   <p
@@ -41,8 +42,7 @@ import logoSrc from '../assets/logo.png';
     data-aos="fade-up"
     data-aos-delay="100"
   >
-    Stop re-explaining your context to your AI. Build it once, share it with
-    your whole team.
+    {hero.subHeadline}
   </p>
 
   <div
@@ -51,16 +51,16 @@ import logoSrc from '../assets/logo.png';
     data-aos-delay="200"
   >
     <a
-      href="https://github.com/crewrig/crewrig"
+      href={hero.primaryCta.href}
       class="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-[#7c3aed] px-6 py-3 font-semibold text-white shadow-lg shadow-[#7c3aed]/30 transition hover:bg-[#8b5cf6]"
     >
-      Fork on GitHub →
+      {hero.primaryCta.label} →
     </a>
     <a
-      href="#quick-start"
+      href={hero.secondaryCta.href}
       class="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-[#7c3aed]/40 px-6 py-3 font-semibold text-[#f0f0f6] transition hover:border-[#8b5cf6] hover:bg-[#7c3aed]/10"
     >
-      Quick Start ↓
+      {hero.secondaryCta.label} ↓
     </a>
   </div>
 
@@ -69,6 +69,6 @@ import logoSrc from '../assets/logo.png';
     data-aos="fade-up"
     data-aos-delay="300"
   >
-    Open source · Works with Claude Code, Gemini CLI &amp; GitHub Copilot
+    {hero.badge}
   </p>
 </section>

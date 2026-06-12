@@ -5,10 +5,12 @@ site. Aimed at the next agent (or human) picking this up.
 
 ## Goal
 
-A single-page marketing site for the **CrewRig** framework, hosted on
-GitHub Pages (project page `crewrig.github.io/crewrig-website/`).
+A single-page narrative site for the **CrewRig** framework, served at
+`https://crewrig.org`. The page leads a first-time visitor through an
+opening, five problem-to-solution cases (one per CrewRig pillar, carried
+by a recurring cast), a getting-started call to action, and a closing.
 Constraints: static output, no SSR, fast to deploy, easy to extend
-section-by-section, scroll-driven animations.
+case-by-case, scroll-driven animations.
 
 ## Non-goals
 
@@ -61,33 +63,107 @@ Dark-first by design; light mode is a non-goal for v1.
 - Both preconnected and loaded in `Layout.astro` to keep the FOUT short.
 - Fallback stack: `system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`.
 
+## Content model
+
+The narrative is **data-driven**, not hard-coded per section. All five
+cases — plus the hero fields and the footer tagline — live as typed data
+in `src/data/cases.ts`. `index.astro` maps over `cases` and renders one
+generic `Case.astro` per entry. This is the single source of truth the
+site renders; `COPY.md` is the human-facing content of record and
+`src/assets/illustrations/STYLE.md` mirrors the illustration briefs. If
+any of the three diverge, `cases.ts` is authoritative.
+
+Each `Case` carries: `id` (drives the section `id` `case-<id>` and the
+illustration filename), `pillar`, `title`, `persona` (`name` + `role`),
+`problem`, `solution`, and `illustration` (`file`, `alt`, `prompt`). The
+copy is user-validated for message integrity — components must not
+paraphrase it.
+
 ## Component breakdown
 
-One `.astro` component per logical section, all consumed by
-`src/pages/index.astro`. This keeps each section reviewable in isolation
-and parallelises copywriting / illustration work across agents.
+A thin set of `.astro` components, all consumed by `src/pages/index.astro`.
+`Case.astro` is the workhorse — one component renders every case from its
+data entry, so adding or reordering a case is a `cases.ts` edit, not a new
+component.
 
 ```
 src/
+├── data/
+│   └── cases.ts            # typed model: hero, five cases, tagline (source of truth)
 ├── layouts/
 │   └── Layout.astro        # <html>, fonts, AOS init, global slot
 ├── pages/
-│   └── index.astro         # composes the 8 sections in order
+│   └── index.astro         # Hero → five Case → QuickStart → Footer
 ├── components/
-│   ├── Hero.astro          # logo + tagline (above the fold)
-│   ├── Problem.astro       # the pain CrewRig addresses
-│   ├── Insight.astro       # the conceptual leap
-│   ├── Solution.astro      # what CrewRig *is*
-│   ├── HowItWorks.astro    # mechanics — teams, tasks, worktrees
-│   ├── FeaturesGrid.astro  # 3-col card grid of capabilities
-│   ├── QuickStart.astro    # copy-pasteable install / first run
-│   └── Footer.astro        # © + GitHub link
+│   ├── Hero.astro          # logo + validated hero copy (above the fold)
+│   ├── Case.astro          # renders one case (persona, problem, solution, illustration)
+│   ├── QuickStart.astro    # copy-pasteable install / first run, CLI toggle
+│   └── Footer.astro        # © + GitHub link + tagline
+├── assets/
+│   └── illustrations/      # committed PNGs + provenance.json + STYLE.md
 └── styles/
     └── global.css          # Tailwind import + @theme tokens
 ```
 
-All section components contain live copy wired from `COPY.md`.
-The `COPY.md` file remains in the repo as the content source of record.
+### Case rendering details
+
+- The illustration is rendered via `astro:assets` `Image` with
+  `format="webp"`, responsive `widths={[480, 800, 1200]}`, and explicit
+  `width`/`height` (1200×800) to reserve layout space and avoid CLS.
+- Astro can't statically resolve a runtime filename into an `src/assets`
+  import, so `Case.astro` uses `import.meta.glob('../assets/illustrations/*.png')`
+  and looks the entry up by `illustration.file`. A missing file throws at
+  build time — a fast, loud failure rather than a silent broken image.
+- The image alternates side by case index (even = right, odd = left).
+- Parity with the previous sections' animation: the **first** case image
+  is `loading="eager"` with no `data-aos` (it's near the fold); cases 2–5
+  are `loading="lazy"` with `data-aos="fade-up"`.
+
+## Illustration pipeline, provenance, and build isolation
+
+Per spec 0001 (Requirements 6–8), every illustration is produced **ahead
+of** the build and committed; the build never calls an image service.
+
+- **Generation (manual).** `scripts/generate-illustrations.mjs` reads each
+  case's `illustration.prompt` from `cases.ts`, prepends the shared style
+  preamble parsed from `STYLE.md`, authenticates via Application Default
+  Credentials, and calls a Vertex AI image model
+  (`gemini-3.1-flash-image-preview`, pinned `REGION = 'us-central1'` with a
+  TODO to confirm availability). It writes `src/assets/illustrations/<id>.png`
+  and upserts a `provenance.json` entry. It is **manual-only** — never wired
+  into `npm run build`, so the build stays offline and deterministic.
+- **Provenance.** `src/assets/illustrations/provenance.json` records, per
+  file, the exact prompt, model identifier, region, generation date, seed,
+  and params — enough to regenerate. It is versioned alongside the PNGs.
+- **Placeholders (current state).** Until cloud access is set up, the PNGs
+  are solid dark placeholders carrying the case title, generated once by
+  `scripts/generate-placeholders.mjs` (uses `sharp`, available transitively
+  via Astro's image service). Their provenance entries are marked
+  `placeholder: true` with `model: "PLACEHOLDER — pending …"`. Real
+  generation later overwrites both the PNG and the provenance entry.
+- **Integrity gate.** `scripts/check-illustrations.mjs` is a *bidirectional*
+  check: every illustration referenced in `cases.ts` must exist on disk and
+  in `provenance.json`, and every `*.png` on disk must have a provenance
+  entry. Any orphan or missing record fails the build (exit 1). This is the
+  enforcement for spec 0001's "untraceable image is caught before it ships"
+  scenario. It runs in CI (`npm run check:illustrations`) between the build
+  and the test pass, and needs no TS toolchain — it parses filenames out of
+  `cases.ts` statically.
+
+## Verify workflow (CI)
+
+`.github/workflows/verify.yml` runs on every `pull_request` and on `push`
+to `main`:
+
+`checkout → setup-node → npm ci → npx playwright install --with-deps →
+npm run build → npm run check:illustrations → npm test`
+
+The **build before test** ordering is required: Playwright's `webServer`
+runs `npm run preview`, which serves `dist/`, so the build output must
+exist first. This is the gate that asserts the page renders, every
+illustration is traceable, and the narrative + QuickStart behaviour hold.
+`.github/workflows/deploy.yml` remains the build-and-deploy path for
+GitHub Pages and is unchanged by the revamp.
 
 ## Animation approach
 
@@ -119,10 +195,9 @@ Each section root carries `data-aos="fade-up"`. Rationale:
 - Required repo setting (manual, one-time): **Settings → Pages →
   Source: GitHub Actions**. The workflow assumes this is set; without
   it `deploy-pages` fails.
-- `site` / `base` in `astro.config.mjs` are pinned to the project URL
-  (`https://crewrig.github.io` + `/crewrig-website`). If the site moves
-  to a custom domain or to the root path, both values must be updated
-  in lockstep — there is no environment override today.
+- `site` in `astro.config.mjs` is pinned to `https://crewrig.org`. The
+  site is served at the domain root, so there is **no** `base` — internal
+  links and assets resolve from `/`. Do not reintroduce a `base`.
 
 ## Open questions / follow-ups
 
