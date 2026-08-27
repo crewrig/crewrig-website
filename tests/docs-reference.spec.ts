@@ -107,6 +107,43 @@ test.describe('Docs section — Reference', () => {
     );
   });
 
+  test('publication-contract.md: fenced grammar examples survive verbatim (F4 fence-awareness bugfix), the real metadata block stays stripped', async ({
+    page,
+  }) => {
+    // Regression test for the render-doc.ts bug logged on issue #32: the
+    // metadata-block strip used to run on the whole raw string before the
+    // fence-aware line loop, so it also erased any `<!-- crewrig-doc: ... -->`
+    // text sitting INSIDE a fenced code block — even when that fence was
+    // merely illustrating the grammar, not declaring real page metadata.
+    // Assert both directions so this test fails whichever way the bug comes
+    // back: the fence content must survive, and the real metadata block must
+    // still be gone.
+    await page.goto(`.${PUBLICATION_CONTRACT}`);
+
+    // "Grammar" section: the generic pattern illustration.
+    const grammarExample = page.locator('#grammar + p + pre code');
+    await expect(grammarExample).not.toBeEmpty();
+    await expect(grammarExample).toContainText(
+      '<!-- crewrig-doc: <key>=<value> <key>=<value> ... -->',
+    );
+
+    // "Example" section: the concrete worked example (a DIFFERENT page's
+    // metadata, `section=lifecycle`, used purely as an illustration here).
+    const workedExample = page.locator('#example + pre code');
+    await expect(workedExample).not.toBeEmpty();
+    await expect(workedExample).toContainText(
+      '<!-- crewrig-doc: section=lifecycle nav_order=20 published=true title="Plan format and review" -->',
+    );
+
+    // The real metadata block for THIS page — right after the H1, outside
+    // any fence — must still be gone. Fence-awareness must not become a
+    // loophole that lets a real, un-fenced metadata block survive.
+    const content = await page.content();
+    expect(content).not.toContain(
+      '<!-- crewrig-doc: section=reference nav_order=50 published=true title="Documentation publication contract" -->',
+    );
+  });
+
   test('each page renders its H1 with no dangling "{#" heading syntax', async ({
     page,
   }) => {
