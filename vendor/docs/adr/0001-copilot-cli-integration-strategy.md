@@ -169,3 +169,50 @@ making them the direct equivalent of `~/.claude/rules/` and `~/.gemini/`.
 files from `config/` to `~/.copilot/instructions/` using the naming
 convention `<priority>-<slug>.instructions.md`. The `[GAP]` for user-level
 layered context recorded in checklist item #7 is hereby resolved.
+
+## Addendum — 2026-07-23: Strict-sync carve-out for the hook-merge mutation
+
+Discovery finding #8 above records that the transcript-hooks opt-in in
+`setup-copilot-interactive.sh` deliberately rewrites the committed
+`.github/copilot/settings.json` locally with an absolute hook path — the
+committed file ships with `"hooks": []` by design, and the opt-in is what
+populates it. `.crewrig/core-paths.txt` did not account for this: the whole
+`.github/copilot` directory was `strict`, so that same designed-in mutation
+made `scripts/sync-from-upstream.sh` abort on every subsequent sync, and the
+`.bak.<timestamp>` file `backup_file()` leaves alongside it showed up as
+untracked noise in `git status`.
+
+`.github/copilot/settings.json` is now reclassified `excluded`, nested
+under the still-`strict` `.github/copilot` parent (spec 0097 / issue #605).
+This does not change where the opt-in writes its hook merge, nor any other
+decision recorded above — it only stops the manifest from treating that one
+file's intended local mutation as upstream drift. Sibling members of
+`.github/copilot/` (e.g. `extension.json`) are unaffected and continue to
+abort the sync on a local diff, exactly as before.
+
+## Addendum — 2026-08-11: Hook schema corrected to the documented object shape
+
+Discovery finding #8 above recorded the committed `settings.json` shipping
+`"hooks": []` and the manifest keyed by PascalCase event names. Both were
+wrong against the vendor hook schema (issue #825): `hooks` must be an
+**object** keyed by **camelCase** config keys (`sessionStart`,
+`userPromptSubmitted`, `postToolUse`, `agentStop`, `sessionEnd`), each
+mapping to an array of `{"type": "command", "command"/"bash": "…"}`
+entries, with `version` as the integer `1`. A non-object `hooks` block is a
+structural error that rejects the whole hooks config — so the previously
+committed `"hooks": []` silently disabled every hook.
+
+`hooks/copilot-transcript-hooks.json`,
+`config/copilot/settings.json.template` and `.github/copilot/settings.json`
+now ship the corrected object schema, and `setup-copilot-interactive.sh`
+patches/merges the object form. The payload's `hook_event_name` remains
+PascalCase regardless of the camelCase config keys, so
+`hooks/mempalace-transcript.sh` is unaffected. The "never commit
+project-relative hook paths" decision stands — the empty hook set is now
+`{}` rather than `[]`.
+
+## Addendum — 2026-08-16: Reversal of workspace-level hook merge in favor of user-level hooks
+
+Discovery finding #8 and the 2026-07-23 Addendum originally recorded that `setup-copilot-interactive.sh` merged transcript hooks into `.github/copilot/settings.json`. That workspace-level mutation embedded machine-specific absolute paths into a tracked file, causing `scripts/check-no-machine-paths.sh` (spec 0081) to fail and leaving working trees permanently dirty.
+
+Spec 0163 supersedes that design: Copilot transcript hooks are now deployed exclusively to the user-level configuration `~/.copilot/hooks/copilot-transcript-hooks.json`, which Copilot CLI loads globally across all workspaces. The repository file `.github/copilot/settings.json` remains clean and immutable with `"hooks": {}`, establishing full parity with Claude and Gemini setup scripts.

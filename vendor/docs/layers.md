@@ -71,6 +71,13 @@ against drift. Org-overlay documentation under `docs/org/` is `excluded` from
 sync and is unioned into the organization's own site build under the same
 contract — never flowing back upstream.
 
+### Continuous-integration reference (spec 0047)
+
+| Path | Description |
+|---|---|
+| `ci/` | Platform-neutral CI capability reference (`ci/ci-capabilities.yml`). One entry per CI job — the engine-agnostic source of truth that the per-engine pipelines (GitHub Actions today, GitLab CI and others later) are derived from and drift-checked against. Core/`strict`; its normative shape is `docs/ci-reference-format.md` (ADR-0012). Top-level rather than under `.github/` so the reference reads as engine-neutral, not GitHub-owned. |
+| `.gitlab-ci.yml` | Generated GitLab CI pipeline (spec 0048). The derived GitLab form of the portable subset of `ci/ci-capabilities.yml` — one job per portable capability, produced by `scripts/build-ci.sh`. Core/`strict` (engine-neutral generated output, upstream-owned). Never hand-edited: `bash scripts/build-ci.sh --check` guards it against drift from the reference in CI. The GitHub Actions workflows under `.github/workflows/` are NOT generated (spec 0048 R5); only GitLab is derived here. |
+
 ### Build and install tooling
 
 | Path | Description |
@@ -90,13 +97,18 @@ components (core).
 The `artifacts/` directory is structured into four zones. Two zones are
 core-owned (upstream immutable); two are overlay-owned (adopting organization).
 
-**`artifacts/library/`** — harness machinery. The friction-reporting and
-curation system. Deployed to user home scope (e.g., `~/.claude/skills/`).
+**`artifacts/library/`** — upstream-owned cross-cutting machinery deployed at
+user-home scope (e.g., `~/.claude/skills/`), available to every workflow on the
+machine rather than only inside a CrewRig project checkout. Friction reporting,
+friction curation, and user-gate validation are **instances** of this contract,
+not an exhaustive member list; a future cross-cutting tool belongs here when it
+matches the contract.
 
 | Path | Description |
 |---|---|
 | `artifacts/library/skills/harness-report/` | Harness skill — friction tagging protocol. |
 | `artifacts/library/skills/harness-curator/` | Harness skill — friction clustering and issue authoring. |
+| `artifacts/library/skills/user-validate/` | Cross-cutting skill — backend-configurable user-gate validation. |
 | `artifacts/library/agents/harness-curator/` | Harness agent — curator specialist. |
 
 **`artifacts/core/`** — SDLC lifecycle tools and operational role skills and
@@ -108,6 +120,7 @@ SDLC lifecycle tools:
 
 | Path | Description |
 |---|---|
+| `artifacts/core/skills/idea/` | Lifecycle skill — IDEA stage idea-convergence. |
 | `artifacts/core/skills/spec-author/` | Lifecycle skill — qualification stage author. |
 | `artifacts/core/skills/pr-logbook/` | Lifecycle skill — PR and logbook composer. |
 | `artifacts/core/skills/pr-reviewer/` | Lifecycle skill — independent PR reviewer. |
@@ -121,6 +134,12 @@ Core rules files (deployed to user home at a fixed priority number):
 | Path | Description |
 |---|---|
 | `artifacts/core/rules/60-tools.md` | Framework-critical tool instructions: three-tier memory architecture, MemPalace protocol, harness engineering loop, Sequential Thinking, Obsidian access model. Deployed at priority 60. NOT a template — upstream content. |
+
+Core system-context store (installed to user home, read on demand):
+
+| Path | Description |
+|---|---|
+| `artifacts/core/system-context/` | Reference-heavy sections extracted from `60-tools.md` (spec 0068): Palace Structure Conventions, Long-Running Task Convention, MCP Tools Reference, Friction Reporting reference detail, Obsidian Protocol. Installed verbatim to `~/.crewrig/system-context/` by every `setup-*-interactive.sh` via `install_dir`, then read on demand — direct file read by default, MemPalace optional, explicit signal on failure (never silently omitted). NOT a template — upstream content. |
 
 ### Built outputs
 
@@ -146,6 +165,9 @@ exist, how org artifacts integrate) is defined in spec 0012 sub-spec E2.
 | `.github/copilot-instructions.md` | Copilot system prompt built from `AGENTS.md`. |
 | `.github/workflows/` | CI/CD pipeline definitions. |
 | `.github/copilot/` | GitHub Copilot workspace configuration. |
+| `.github/copilot/settings.json` | Committed workspace settings, `strict` by default as a member of `.github/copilot/` above — except its `hooks` key, which the transcript-hooks opt-in in `setup-copilot-interactive.sh` deliberately rewrites locally with an absolute path (ADR-0001 Discovery finding #8). Reclassified `excluded`, nested under the strict `.github/copilot/` parent (spec 0097 / issue #605), so that designed-in local mutation no longer aborts `scripts/sync-from-upstream.sh`; sibling members such as `extension.json` remain `strict` and still abort on a local diff. |
+| `.agents/skills/` | Compiled Antigravity CLI skill definitions. |
+| `.agents/agents/` | Compiled Antigravity CLI agent definitions. |
 
 ### Extension distribution channel
 
@@ -177,7 +199,7 @@ to every deployment of CrewRig.
 
 | Path | Description |
 |---|---|
-| `.crewrig/` | Machine-readable sync manifest and related tooling. `.crewrig/core-paths.txt` enumerates core-layer paths and their sync policy consumed by `scripts/sync-from-upstream.sh`. The `.crewrig/.synced-markers/` subtree is carved out as adopter-owned state (spec 0020) — see the Overlay layer. |
+| `.crewrig/` | Machine-readable sync manifest and related tooling. `.crewrig/core-paths.txt` enumerates core-layer paths and their sync policy consumed by `scripts/sync-from-upstream.sh`. Two members are carved out as adopter-owned (spec 0020) — see the Overlay layer: the `.crewrig/.synced-markers/` subtree (machine-managed sync state) and `.crewrig/spec-id-carrier` (the reservation-namespace setting, spec 0112). |
 
 ---
 
@@ -192,7 +214,7 @@ from the examples layer.
 
 | Path | Description |
 |---|---|
-| `crewrig.config.toml` | Fork-level configuration: `canonical_repo`, `feedback_repo`, overlay path declarations. |
+| `crewrig.config.toml` | Fork-level configuration: `canonical_repo`, `feedback_repo` (scopes to adopter-owned tiers only — upstream-owned components always route feedback to `canonical_repo`), overlay path declarations. |
 | `config/ORGANIZATION.md` | Organization overview: company context, code quality standards, collaboration norms. |
 | `config/TOOLS.md` | Tool and MCP server guidelines specific to the organization. |
 
@@ -210,7 +232,7 @@ from the examples layer.
 | Path | Description |
 |---|---|
 | `extensions/org/` | Adopter-owned extension tier. The adopting organization places its own CrewRig extensions here. Excluded from the upstream sync — never modified, restored, or aborted on. The upstream `extensions/core/` and `extensions/library/` tiers are committed and live in the Core layer. |
-| `artifacts/community/mcp-servers/` | MCP server declarations specific to the organization (Jira, Confluence, Slack, etc.). |
+| `artifacts/community/mcp-servers/` | MCP server *implementation code* the organization itself **develops** (a server it writes and hosts). This is **not** the declaration channel for third-party remote servers (Jira, Confluence, Slack, forge MCPs, etc.) — those are *declared* through the org-owned `mcp-servers.org.json` manifest (spec 0091; see *Org overlay carve-outs in core trees* below). |
 | `artifacts/community/hooks/` | Lifecycle hooks specific to the organization. |
 | `artifacts/community/policies/` | Organization-level policy files. |
 | `artifacts/community/themes/` | UI theme files specific to the organization. |
@@ -230,9 +252,11 @@ sync.
 
 | Path | Description |
 |---|---|
-| `specs/org/` | Organization-owned specification overlay, nested in core `specs/`. Excluded from upstream sync. |
+| `specs/org/` | Organization-owned specification overlay, nested in core `specs/`. Excluded from upstream sync, and from the spec linter's upstream filename/frontmatter/heading validation (spec 0071). |
 | `docs/org/` | Organization-owned documentation overlay, nested in core `docs/`. Excluded from upstream sync. |
 | `AGENTS.org.md` | Organization-owned agent-rules extension, loaded alongside the upstream `AGENTS.md` (natively on Claude via `@` import; via the priority-66 setup deployment on Gemini and Copilot). Excluded from upstream sync. |
+| `.crewrig/spec-id-carrier` | Repository-scoped setting naming the git ref namespace that holds spec-id reservations (spec 0112), nested in the core `.crewrig/` tree. Value constrained to a closed pair — `refs/spec-ids/` (the shipped default) or `refs/tags/spec-id/` (for a remote that refuses a custom top-level namespace); org reservations go to the *sibling* namespace of whichever is set. Changed by pull request, never by an environment export: the create-only compare-and-swap locks a *ref*, so two contributors with divergent carriers would both succeed and both hold the same id. Excluded from upstream sync — which also means upstream can never update the value afterwards. Still reaches every fork, because `excluded` governs synchronisation, not distribution. |
+| `mcp-servers.org.json` | Organization-owned MCP server **declaration / configuration** channel (spec 0091): a root-level, CLI-agnostic manifest mapping each server name to its transport, endpoint, and authorization (no implementation code — that is `artifacts/community/mcp-servers/`, above). Setup translates it into each CLI's native MCP config and folds it after the spec-0089 operator merge (precedence framework-reserved > org > operator). Follows the `<name>.org.<ext>` convention of `AGENTS.org.md`; ships empty (no operational server or credential). Excluded from upstream sync. |
 
 ### Adopter-managed sync state (spec 0020)
 
@@ -360,6 +384,8 @@ committed to the repository.
 | `.claude/worktrees/` | Claude Code worktree metadata. |
 | `.worktrees/` | Git worktrees created during agent team sessions. |
 | `dist/<tier>/` | Gitignored staging tree for non-`core` build outputs (ADR-0011, spec 0019). `scripts/build-components.sh` writes each non-`core` tier here (`library`, `community`, `org`); the interactive setup scripts install from it to the user home. Never committed. |
+| `build/extensions/<name>/` | The render-at-publication build tree for an extension (spec 0173, as amended by `specs/0173-extension-declaration-model.delta-01.md`). `scripts/build-extension.sh --target gemini` produces the complete installable tree Gemini CLI loads — every generated extension output (`gemini-extension.json`, `commands/*.toml`, `hooks/hooks.json` when the generic `hooks` section maps on Gemini — spec 0179, issue #1005, via `scripts/lib/extension-hooks.sh` —, `GEMINI.md` when a `context` source is declared — spec 0181, issue #1007, via `scripts/lib/render-context.sh` — …) is produced INTO this build directory and committed nowhere; `scripts/install-extension.sh` and `task link-gemini-extension-build` are what consume it for a local install; `scripts/release-package-extension.sh` (spec 0183, issue #1008) is the third consumer, archiving this tree's contents at the archive root (no wrapper directory — pinned live against the installed tool, `docs/runbooks/extension-release-install-probe.md`) as the published release artifact. |
+| `build/gaps/<name>/` | The observed, unmappable-declaration gap set the render actually saw for one extension (`observed-gaps.json`), a build output compared by `bash scripts/build-extension.sh --check` against the extension's hand-authored, committed `accepted-gaps.json`. Kept outside `build/extensions/<name>/` so the installable tree stays free of build metadata. Each entry carries `subject` and `target`; a `hooks`-subject entry (spec 0179 R14) additionally carries `hook`, `event` and `part` (`"event"` or `"matcher"`), so two hooks differing only in their neutral event produce distinguishable entries rather than colliding on one `subject`+`target` pair. |
 | `.DS_Store` | macOS Finder metadata. |
 | `node_modules/` | Node.js dependencies installed locally — gitignored. |
 | `*.env` | Environment secrets — never committed. |

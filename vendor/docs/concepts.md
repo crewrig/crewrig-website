@@ -22,12 +22,13 @@ them with a numeric prefix from `00` to `60`:
 | 50 | `config/teams/<TEAM>.md` | Team practices and norms |
 | 60 | `config/TOOLS.md` | Memory architecture and MCP servers |
 
-The three supported tools consume the same source files but load them
+The four supported tools consume the same source files but load them
 differently: Gemini CLI uses numeric-prefix files in `~/.gemini/` with enforced
-priority order, Claude Code combines them additively from `~/.claude/rules/`, and
+priority order, Claude Code combines them additively from `~/.claude/rules/`,
 GitHub Copilot CLI applies them as `*.instructions.md` files in
-`~/.copilot/instructions/`. The build pipeline that reconciles these differences
-is documented in the [CLI support matrix](cli-matrix.md).
+`~/.copilot/instructions/`, and Antigravity CLI loads them from
+`~/.gemini/antigravity-cli/`. The build pipeline that reconciles these
+differences is documented in the [CLI support matrix](cli-matrix.md).
 
 ## Core, overlay, and examples layering
 
@@ -50,12 +51,12 @@ policy for catalogs like `config/expertise/` and `config/teams/` — lives in th
 
 ## Multi-CLI parity
 
-CrewRig implements each feature symmetrically across Gemini CLI, Claude Code, and
-GitHub Copilot CLI. Silent asymmetry is prohibited: where a feature cannot be
-mirrored on a given tool, the gap must be justified with concrete evidence that
-the target tool lacks the mechanism, rather than left unexplained. The per-tool
-integration points, parity checks, and gap-acceptance evidence are tracked in
-the [CLI support matrix](cli-matrix.md).
+CrewRig implements each feature symmetrically across Gemini CLI, Claude Code,
+GitHub Copilot CLI, and Antigravity CLI. Silent asymmetry is prohibited: where
+a feature cannot be mirrored on a given tool, the gap must be justified with
+concrete evidence that the target tool lacks the mechanism, rather than left
+unexplained. The per-tool integration points, parity checks, and
+gap-acceptance evidence are tracked in the [CLI support matrix](cli-matrix.md).
 
 ## Shared cross-tool memory
 
@@ -69,11 +70,16 @@ persists and travels across tools:
 | 3 | Obsidian | User knowledge base | Read free, write user-controlled |
 
 MemPalace is the tier that makes memory *shared*: it is read/write and visible
-across Gemini CLI, Claude Code, and Copilot CLI, so a decision recorded during a
-Claude Code session can be recovered later from Gemini CLI. The full memory
-protocol — how agents activate memory at session start, the wing/room/drawer
-structure, and the cross-tool task-handoff convention — is specified in the
-framework's tool rules (the priority-60 core rules file).
+across Gemini CLI, Claude Code, Copilot CLI, and Antigravity CLI, so a decision
+recorded during a Claude Code session can be recovered later from Gemini CLI.
+Under the shared MemPalace MCP HTTP daemon topology, the agent-memory tier is
+served by a single shared process rather than by one process per session —
+see [ADR 0016](adr/0016-shared-mempalace-mcp-http-server.md) for the decision
+record and the [MCP daemon runbook](runbooks/mempalace-mcp-server.md) for
+converting a machine to it. The full memory protocol — how agents activate
+memory at session start, the wing/room/drawer structure, and the cross-tool
+task-handoff convention — is specified in the framework's tool rules (the
+priority-60 core rules file).
 
 ## The harness feedback loop
 
@@ -83,5 +89,8 @@ agent's action, or a tool surprises the agent a second time), the agent invokes
 the `harness-report` skill to tag the friction into a global memory wing. The
 `harness-curator` skill later clusters those tags and opens one descriptive
 GitHub issue per cluster, which is then fixed through the normal branch/PR
-workflow. The loop is covered in depth on the
-[Harness engineering](harness-engineering.md) page.
+workflow. Where that issue lands depends on the component's tier: frictions on
+upstream-owned components (`core`, `library`) always reach the upstream
+repository, while frictions on a fork's own components (`community`, `org`)
+land on the fork's configured `feedback_repo`. The loop is covered in depth on
+the [Harness engineering](harness-engineering.md) page.

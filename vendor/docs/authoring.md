@@ -5,9 +5,16 @@
 Skills, agents, and commands are CrewRig's reusable agent capabilities. The
 core idea is **author once, compile everywhere**: you write a single Markdown
 source file with YAML frontmatter, and `scripts/build-components.sh` generates
-the tool-specific outputs for Gemini CLI, Claude Code, and GitHub Copilot CLI.
+the tool-specific outputs for Gemini CLI, Claude Code, GitHub Copilot CLI, and
+Antigravity CLI.
 This page is the conceptual overview; the normative format contract lives in
 [`artifacts/FORMAT.md`](../artifacts/FORMAT.md).
+
+This page's scope is the component pipeline — skills, agents, and commands —
+and stops there. It does not cover CrewRig's separate extension model
+(code-based capabilities declared in their own `extension.json`, such as MCP
+servers, lifecycle hooks, and per-CLI packaging); see
+[Extension authoring](extension-authoring.md) for that model's entry point.
 
 ## The single-source zone
 
@@ -90,8 +97,12 @@ Semantic Versioning, and any change to a shipped source must bump it in the same
 diff — a CI gate (`scripts/check-skill-versions.sh`) enforces this. The
 provenance block is what lets feedback flow back to the right repository after a
 fork and what lets the harness loop pin the contract observed when a friction
-was reported. The forking workflow, placeholder resolution, and version
-semantics are detailed in [`artifacts/FORMAT.md`](../artifacts/FORMAT.md).
+was reported. The feedback target is resolved **per tier**: components in
+upstream-owned tiers (`core`, `library`) always route feedback to their
+`canonical` repository, while adopter-owned tiers (`community`, `org`) route to
+the fork's configured `feedback_repo`. The forking workflow, placeholder
+resolution, and version semantics are detailed in
+[`artifacts/FORMAT.md`](../artifacts/FORMAT.md).
 
 ## Where to read next
 

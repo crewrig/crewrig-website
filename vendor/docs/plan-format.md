@@ -9,8 +9,10 @@ the lifecycle introduced in
 satisfy and the schema that the plan reviewer (per `AGENTS.md` →
 *Plan review protocol*) and the retroactive routing engine
 (issue #172) will rely on. The format is mandated by
-[`specs/0004-plan-format-and-review.md`](../specs/0004-plan-format-and-review.md);
-every section below traces back to one of its requirements R1..R11.
+[`specs/0004-plan-format-and-review.md`](../specs/0004-plan-format-and-review.md)
+(R1..R11) and, for the tier-conditioned mandatory set below, by
+[`specs/0138-tier-bounded-plan-artifacts-and-loops.md`](../specs/0138-tier-bounded-plan-artifacts-and-loops.md)
+(R1); every section below traces back to one of these requirements.
 
 ## Not a file — a comment
 
@@ -33,17 +35,21 @@ matching exactly one of the patterns below.
 |---|---|---|
 | Initial plan | `## PLAN — issue #<N> (spec <NNNN>)` | R1 |
 | Revision | `## PLAN v<N+1> — issue #<N> (spec <NNNN>) — revision after <trigger>` | R9 |
-| Review | `## PLAN review — issue #<N>` followed by `### Verdict: APPROVE` or `### Verdict: REQUEST CHANGES` on the next non-empty line | R6 |
+| Review (pass 1) | `## PLAN review — issue #<N>` (or `## PLAN review of v1 — issue #<N>`) followed by `### Verdict: APPROVE` or `### Verdict: REQUEST CHANGES` on the next non-empty line | R6 |
+| Review (pass M ≥ 2) | `## PLAN review of v<M> — issue #<N>` followed by `### Verdict: APPROVE` or `### Verdict: REQUEST CHANGES` on the next non-empty line | R6 |
 
 `<N>` is the logbook issue number, `<NNNN>` the zero-padded spec id,
+`<M>` the plan revision ordinal being judged (`v1`, `v2`, etc.),
 and `<trigger>` is a short noun phrase describing why the revision
 exists (`DEV finding`, `user request`, `REQUEST CHANGES review`,
-etc.).
+etc.). `## PLAN review — issue #<N>` is accepted as a backward-compatible
+alias for `## PLAN review of v1 — issue #<N>`.
 
 ## Mandatory body sections
 
-An initial or revised plan comment SHALL contain the following five
-level-3 headings, in this order, with their text matching verbatim
+An initial or revised plan comment SHALL contain the level-3 headings
+below that are mandatory at its complexity tier (see *Tier-conditioned
+mandatory set*), in this order, with their text matching verbatim
 (case-sensitive, no trailing punctuation). A future plan linter will
 rely on header presence and ordering to validate conformance.
 
@@ -82,6 +88,34 @@ revert path (commit revert, configuration rollback, data migration
 reversal, etc.) and any coordination required with downstream tickets
 or deployed components.
 
+## Tier-conditioned mandatory set
+
+The complexity tier declared in the ticket's spec frontmatter (per
+[ADR-0010](adr/0010-spec-plan-review-lifecycle.md) → *Complexity tiers
+and team sizing*) determines which of the five sections above are
+mandatory:
+
+- At every tier — `trivial`, `small`, `standard`, and `large` —
+  `### Approach` and `### Steps` are mandatory for a structured plan
+  comment; the sole exception is the `trivial`-tier one-line plan
+  confirmation admitted by spec 0138 R2 and by
+  [ADR-0010](adr/0010-spec-plan-review-lifecycle.md) → *Stage
+  definitions and transition rules* rule 3, which is a sufficient PLAN
+  artifact without either section. That confirmation still carries the
+  *Initial plan* header `## PLAN — issue #<N> (spec <NNNN>)` from
+  *Header conventions* above, so it stays discoverable under the
+  header patterns this document's preamble names and satisfies
+  `specs/0004-plan-format-and-review.md` R1; it is exempt from the
+  level-3 section set alone.
+- At `trivial` and `small` tiers, `### Blast radius`,
+  `### Alternatives considered and rejected`, and `### Rollback
+  strategy` MAY be omitted; when present, they SHALL keep the format
+  defined above.
+- At `standard` and `large` tiers, all five sections remain mandatory
+  (R1 of spec 0138).
+
+These clauses bound the plan's size and the loop's length; they remove no item from the reviewer's checklist at any tier.
+
 ## Optional sections
 
 **`### Risks`** — discrete risks with a one-line mitigation or
@@ -90,24 +124,43 @@ acceptance note each. When present, the section SHALL appear **after**
 uncertainty SHOULD include it; plans whose blast radius is fully
 bounded MAY omit it.
 
+**`### Finding traceability`** (or `### Revision rationale & traceability`) —
+a Markdown table mapping every reviewer-minted ID (`v<N>-F<M>`) raised across
+prior review passes to its resolution or rationale in the revised plan comment.
+Mandatory when revising a plan in response to a `REQUEST CHANGES` verdict.
+The table SHALL carry the schema:
+
+```markdown
+| Plan Ver | Finding ID | Resolution / Rationale | Step |
+|---|---|---|---|
+| v1 | v1-F1 | Added preconditions step | Step 1 |
+| v1 | v1-F2 | Clarified scope boundary | Step 3 |
+```
+
+The row count of addressed reviewer-minted IDs SHALL equal the total number
+of findings raised across prior review passes (per `docs/plan-review-protocol.md`
+→ *Countable invariant*).
+
 ## Finding tag schema
 
-Every plan-review finding SHALL carry exactly one `class:` field
-whose value is one of `tech`, `arch`, or `spec` (R7). The class
-drives the loop target of the retroactive review loop; the routing
-matrix is defined once, in `AGENTS.md` → *Retroactive review loop*,
+Every plan-review finding SHALL carry a reviewer-minted identifier in its header
+(`v<N>-F<M>`) and exactly one `class:` field whose value is one of `tech`, `arch`,
+or `spec` (R7). The class drives the loop target of the retroactive review loop;
+the routing matrix is defined once, in [`docs/retroactive-loop.md`](retroactive-loop.md)
+→ *Routing matrix* (restated in condensed form in
+[ADR-0010](adr/0010-spec-plan-review-lifecycle.md) → *Routing matrix*),
 and SHALL NOT be duplicated here.
 
 A reviewer comment that lists multiple findings SHALL tag each
 finding individually:
 
 ```markdown
-**Finding 1**
+**Finding 1 (v1-F1)**
 
 class: tech
 <one-paragraph description and remediation pointer>
 
-**Finding 2**
+**Finding 2 (v1-F2)**
 
 class: arch
 <one-paragraph description and remediation pointer>
