@@ -93,11 +93,12 @@ test.describe('Docs section — Lifecycle', () => {
     page,
   }) => {
     // `](reviewer-seat.md)` — now in-manifest since this same ticket
-    // publishes the page.
+    // publishes the page. Linked six times across the page.
     await page.goto(`.${RETROACTIVE_LOOP}`);
     const link = page.locator(
       `article.doc-content a[href="${REVIEWER_SEAT}"]`,
     );
+    await expect(link).toHaveCount(6);
     await expect(link.first()).toBeVisible();
     const res = await page.goto(REVIEWER_SEAT);
     expect(res?.status()).toBe(200);
