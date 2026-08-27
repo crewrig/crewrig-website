@@ -14,7 +14,7 @@ site actually renders lives in `src/data/cases.ts`; if the two diverge,
 
 ## Hero (opening)
 
-**Badge:** Open source · Works with Claude Code, Gemini CLI & GitHub Copilot CLI
+**Badge:** Open source · Works with Claude Code, Gemini CLI, GitHub Copilot CLI & Antigravity CLI
 
 **Headline:** Your team's AI context, built once — not rebuilt by everyone.
 
@@ -63,7 +63,7 @@ context is gone, and the next agent starts blind.
 that survives across sessions and across tools. What an agent learns in one
 session — decisions, obstacles, the reasoning behind a fix — is written once and
 readable later, by Marcus or by a teammate's agent, whether they're on Claude
-Code, Gemini CLI, or Copilot.
+Code, Gemini CLI, GitHub Copilot CLI, or Antigravity CLI.
 
 ---
 
@@ -80,8 +80,8 @@ capability the team needed already existed; it just couldn't travel.
 **Solution:** In CrewRig, skills, agents, and commands are authored once as a
 single Markdown file in artifacts/. One build step
 (scripts/build-components.sh) compiles that source into outputs for Claude Code,
-Gemini CLI, and GitHub Copilot CLI. Lena writes the skill one time; her
-teammates install it on any supported CLI.
+Gemini CLI, GitHub Copilot CLI, and Antigravity CLI. Lena writes the skill one
+time; her teammates install it on any supported CLI.
 
 ---
 
@@ -111,16 +111,17 @@ same wall alone.
 **Title:** Switch the tool, rebuild everything
 **Persona:** Aisha Diallo — DevX / tooling engineer
 
-**Problem:** Aisha moves between Claude Code, Gemini CLI, and Copilot depending
-on the task. Without a shared layer, each tool is its own island: her profile,
-her skills, her team's conventions all have to be rebuilt per CLI. Trying a
-different tool means rewriting her whole setup — so in practice, nobody does.
+**Problem:** Aisha moves between Claude Code, Gemini CLI, GitHub Copilot CLI,
+and Antigravity CLI depending on the task. Without a shared layer, each tool is
+its own island: her profile, her skills, her team's conventions all have to be
+rebuilt per CLI. Trying a different tool means rewriting her whole setup — so
+in practice, nobody does.
 
 **Solution:** CrewRig holds one source configuration in config/ and artifacts/,
 and its setup and build scripts deploy it into each CLI's own directory. The
-same layered context and the same skills run on Claude Code, Gemini CLI, and
-GitHub Copilot CLI. Aisha switches tools without rebuilding her setup — the
-context follows her.
+same layered context and the same skills run on Claude Code, Gemini CLI,
+GitHub Copilot CLI, and Antigravity CLI. Aisha switches tools without
+rebuilding her setup — the context follows her.
 
 ---
 
@@ -138,7 +139,7 @@ git clone https://github.com/crewrig/crewrig.git
 ### Step 2 — Install prerequisites
 Read the [README → Prerequisites](https://github.com/crewrig/crewrig#prerequisites)
 and install the required tools:
-Task · Claude Code, Gemini CLI, or GitHub Copilot CLI · fzf · uv · yq
+Task · Claude Code, Gemini CLI, GitHub Copilot CLI, or Antigravity CLI · fzf · uv · yq
 
 *OS-specific install commands are in the README.*
 
@@ -162,13 +163,24 @@ copilot -i "/init-soul"
 *Build your personal profile and customize the agent identity. Run from the
 repo root so Copilot picks up `.github/skills/`.*
 
-### Step 4 — Setup (Claude Code / Gemini CLI / GitHub Copilot)
+### Step 3 — Initialize (Antigravity CLI)
+```bash
+claude /init-personal-profile
+claude /init-soul
+```
+*Antigravity CLI reads the same `config/PROFILE.md` and `config/SOUL.md`.
+Generate them once with Claude Code or Gemini CLI, then run the Antigravity
+setup.*
+
+### Step 4 — Setup (Claude Code / Gemini CLI / GitHub Copilot / Antigravity CLI)
 ```bash
 task setup-claude-interactive
 task setup-gemini-interactive
 task setup-copilot-interactive
+task setup-antigravity-interactive
 ```
-*Deploys the shared config to your harness.*
+*Deploys the shared config to your harness. The Antigravity CLI harness
+additionally requires the `agy` binary on your PATH.*
 
 **Bottom CTA:** View on GitHub →
 
