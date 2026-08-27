@@ -11,6 +11,49 @@ and the contract layered on top by `AGENTS.md` → *Retroactive review
 loop*. Every section below traces back to one of spec 0005's
 requirements R1..R14.
 
+## Finding classes and routing
+
+Every REVIEW finding SHALL be tagged with exactly one class. Class drives the loop target.
+
+| Finding class | Loop target | Re-spawn | Spec-PR impact |
+|---|---|---|---|
+| `tech` | DEV | developer + tester | none |
+| `arch` | PLAN | architect → developer + tester | none |
+| `spec` | SPECS | spec-author → architect → developer + tester | new delta-spec PR (per #170) |
+
+Rules:
+
+- The loop SHALL NOT change the logbook issue (Rule A still holds).
+
+**Termination.** The lifecycle terminates at MERGE iff a REVIEW pass verdict is APPROVE AND the pass surfaces zero findings of any class AND CI is green on the head commit reviewed.
+
+**Max-iteration guardrail.** The loop halts after **5 iterations** (configurable in the spec frontmatter, default 5) without termination. On halt, the orchestrator posts a structured summary on the logbook issue and pages the user regardless of mode (including AUTO).
+
+Definitions of each class, canonical and borderline examples, and the disambiguation rule (escalate upstream on tie) live in ADR-0010 → *Finding classification taxonomy*. The routing engine itself lands in issue #172.
+
+## Deferred-findings ledger
+
+Non-blocking findings MAY be routed to a persistent findings ledger rather than into the retroactive routing loop (see *Non-blocking conditional routing* below).
+
+**Turnover-shaped findings — an inbound cause.** A finding a seated pass raises on a surface unchanged since that seat last examined it, carrying no statement of which condition returned that surface to scope ([`docs/reviewer-seat.md`](reviewer-seat.md) → *A finding on an unchanged surface*), SHALL be treated as non-blocking and routed here; the iteration SHALL NOT be routed to an upstream stage on its account. In INTERMEDIATE, MINIMAL and AUTO the orchestrator applies this disposition directly, as *Non-blocking conditional routing* below already requires. In FULL it is the disposition the orchestrator **presents** in that same section's per-finding triage: the user's `loop` / `ledger` / `dismiss` choice, and *Termination* condition 4's treatment of a FULL-mode loop-routed finding, are unchanged — spec 0166 R20 forbids the seat contract from removing that gate.
+
+**Ledger shape and ownership.** The project maintains exactly one findings ledger: a pinned GitHub issue titled `📋 Findings ledger — deferred non-blocking findings` carrying the `deferred-findings-ledger` label. It serves as the single sink for all ledger-routed findings and SHALL never be closed. Each entry records the source PR number, source ticket number, finding class, a one-line summary, date routed, and the routing actor.
+
+**Journalling.** The orchestrator SHALL journal every ledger-route disposition on the active logbook issue (one line per finding: finding ref, disposition `ledger`, actor).
+
+**Drain protocol.** The project maintainer triggers a drain pass by posting a `DRAIN` comment on the ledger issue. Each open entry is evaluated as:
+
+- **Promote**: Finding is material; open a new ticket to address it.
+- **Accept**: Finding is noted but not actionable; close entry with rationale.
+- **Carry**: Finding is still relevant but not urgent; leave open.
+
+The maintainer is the sole decision-maker for each disposition.
+
+**Growth guardrail.** To prevent unbounded growth:
+
+- The orchestrator posts a warning on the logbook issue when open entries exceed **10**.
+- The orchestrator pages the user and blocks all further ledger-route operations when open entries exceed **20**, until a DRAIN comment is posted and at least one entry is disposed.
+
 ## Doc-only engine
 
 The engine is **a documented procedure the orchestrator (the
@@ -29,10 +72,40 @@ the *Class tagging discipline* section below; downstream skills
 (`developer`, `tester`, `spec-author` in delta mode) need only the
 *Routing matrix* row that names them.
 
+## REVIEW launch trigger
+
+The REVIEW stage begins the moment the implementation PR exists on the
+remote. The orchestrator SHALL:
+
+1. Apply the `iter:1` label to the implementation PR (per *Iteration
+   counter — GitHub label*).
+2. **Immediately** instantiate the `review/<ticket>` seat with a
+   references-only brief — no pause, no prompt, no user acknowledgement
+   requested. The brief's contents, and the seat's obligations, are
+   defined in [`docs/reviewer-seat.md`](reviewer-seat.md); the
+   `iter:1`-before-instantiation ordering above is unchanged.
+
+The spawn sequence is mode-conditional:
+
+| Mode | Action |
+|---|---|
+| **INTERMEDIATE** | Apply `iter:1` label; spawn `pr-reviewer` immediately. |
+| **MINIMAL** | Apply `iter:1` label; spawn `pr-reviewer` immediately. |
+| **AUTO** | Apply `iter:1` label; spawn `pr-reviewer` immediately. |
+| **FULL** | Post the non-blocking start-of-iteration notification on the logbook issue (per `AGENTS.md` → *Interaction modes*); apply `iter:1` label; spawn `pr-reviewer` immediately. The notification does NOT block spawning. |
+
+**Process violation.** Pausing after PR creation and waiting for user
+input before spawning the reviewer is a process violation in
+INTERMEDIATE, MINIMAL, and AUTO modes. The REVIEW loop in those modes
+is fully autonomous from the moment the PR exists — no user gate fires
+until the max-iteration guardrail (see *Max-iteration guardrail*) or the
+final merge-authorization request.
+
 ## Routing matrix
 
 The matrix below is the engine's authoritative reference. It is also
-restated in condensed form in `AGENTS.md` → *Retroactive review loop*
+restated in condensed form in
+[ADR-0010](adr/0010-spec-plan-review-lifecycle.md) → *Routing matrix*
 for cross-section navigability; the duplication is intentional, and
 the two surfaces SHALL stay in lockstep when either is amended.
 
@@ -47,6 +120,12 @@ The re-spawn columns are minimums. Every re-spawn SHALL apply the
 Security rule* if the touched surface qualifies; the engine does not
 override the rule, it inherits it.
 
+**Delta-spec baseline reset.** When a `spec`-class iteration produces
+and merges a new delta-spec PR, the return to the PLAN stage initiates a
+fresh planning baseline against the amended specification: the PLAN-revision
+counter resets to zero for that subsequent iteration (per
+[`docs/plan-review-protocol.md`](plan-review-protocol.md) → *PLAN-loop cap*).
+
 ## Class tagging discipline
 
 Every reviewer finding SHALL carry exactly one `class:` field whose
@@ -60,8 +139,11 @@ orchestrator SHALL NOT consume it. Instead (spec 0005 R3):
 1. Post a comment on the relevant PR (implementation-PR for `tech` /
    `arch` candidates, spec-PR for `spec` candidates) explicitly
    requesting retagging, naming each unlabeled finding by its index.
-2. Re-spawn the reviewer cold (same role, fresh agent) with the retag
-   instruction.
+2. Re-issue the verdict **from the same seat** (a fresh agent holding no
+   session state, per [`docs/reviewer-seat.md`](reviewer-seat.md) →
+   *Retagged verdicts*) with the retag instruction. The retag opens no
+   new dossier entry, and the corrected verdict replaces the malformed
+   one in the dossier.
 3. **Do NOT increment the iteration counter for this pass.** A
    malformed verdict does not count as an iteration consumed against
    the max-iteration guardrail (R9). The engine refuses to penalise
@@ -83,10 +165,12 @@ precedence:  spec  >  arch  >  tech
 
 Findings of lower-precedence classes from the same pass SHALL NOT be
 silently dropped — they SHALL be re-tagged onto the next iteration's
-verdict by the next reviewer spawned cold (spec 0005 R5). The engine
-does not parallelise multi-class routing within a single iteration;
-parallelising would fan out the team and require synchronizing N
-upstream re-spawns against a single PR, which the spec-PR workflow
+verdict by **the same seat's next pass** (spec 0005 R5; the seat is
+defined in [`docs/reviewer-seat.md`](reviewer-seat.md)). The precedence
+order above is unchanged. The engine does not parallelise multi-class
+routing within a single iteration; parallelising would fan out the team
+and require synchronizing N upstream re-spawns against a single PR,
+which the spec-PR workflow
 (spec 0003) and the plan-review protocol (spec 0004) explicitly
 forbid by their one-artifact-per-stage discipline.
 
@@ -112,6 +196,17 @@ abandon the implementation-PR, open a fresh ticket whose SPECS stage
 authors a replacement spec (frontmatter `superseded-by: <new-id>` on
 the old, `superseded` on its status line). The loop owns deltas;
 it does not own full re-authoring.
+
+## Spec-PR ordering guard
+
+When an implementation branch (`feat/<NNNN>-<slug>` and siblings) is
+opened against `main` while the corresponding spec-PR is still open,
+the REVIEW pass on that implementation-PR SHALL emit a `class: tech`
+finding citing [`docs/spec-pr-workflow.md`](spec-pr-workflow.md) →
+*Ordering rule* (and
+[`specs/0003-spec-pr-workflow.md`](../specs/0003-spec-pr-workflow.md) →
+*Ordering rule*), and the implementation-PR SHALL NOT be retried until
+the spec-PR is merged on `main`.
 
 ## Iteration counter — GitHub label
 
@@ -146,32 +241,36 @@ cross-session-safe by virtue of being a GitHub primitive — two
 sibling orchestrators racing the same PR converge on the same label
 state without coordinating through MemPalace.
 
-**Initial label.** The first REVIEW pass on a freshly opened PR
-implies `iter:1`; the engine SHALL apply the `iter:1` label at the
-moment the first verdict is consumed, not at PR open time. PRs that
-never need a second pass therefore carry exactly one `iter:N` label
-on merge — a useful searchable signal for ticket-difficulty
+**Initial label.** The `iter:1` label SHALL be applied to the PR
+**before** the first reviewer is spawned — between PR creation and
+reviewer launch, not after the first verdict is consumed (see
+*REVIEW launch trigger* for the exact step ordering). PRs that never
+need a second pass therefore carry exactly one `iter:N` label on
+merge — a useful searchable signal for ticket-difficulty
 retrospectives.
 
 ## Termination
 
-The lifecycle terminates at MERGE iff all three conditions hold on
-the same REVIEW pass (spec 0005 R8):
+The lifecycle terminates at MERGE iff all four conditions hold on
+the same REVIEW pass (spec 0005 R8, as amended by spec 0162):
 
 1. The verdict line is `### Verdict: APPROVE`.
-2. The pass surfaces **zero** findings of any class (blocking or
-   non-blocking — see *Non-blocking conditional routing* for the
-   non-blocking distinction).
+2. The pass surfaces **zero blocking** findings of any class.
 3. CI is **green** on the head commit reviewed. The engine SHALL
    query `gh pr checks <pr-number>` and confirm every required
    check is `pass`; pending or failing checks block termination
    regardless of the verdict text.
+4. Every non-blocking finding in the pass has been disposed as **ledger** or **dismiss** (FULL: per user triage; others: auto-ledger). Non-blocking findings loop-routed by the user in FULL mode count as blocking for this purpose.
 
-All three are necessary. An APPROVE with one nit is one finding away
-from termination. An APPROVE with zero findings and red CI is a
+All four are necessary. An APPROVE with one blocking finding is one finding away
+from termination. An APPROVE with zero blocking findings and red CI is a
 reviewer who skipped the CI-status section of `pr-reviewer` →
 *Preflight*; the engine SHALL flag this as a protocol violation and
-re-spawn the reviewer cold.
+re-instantiate the **same seat**. A seat's bounded reading
+([`docs/reviewer-seat.md`](reviewer-seat.md) → *Bounded scope from the
+second pass*) never waives this: the continuous-integration state of the
+current head is inside the bound on every pass, whatever else the pass is
+excused from re-examining.
 
 ## Max-iteration guardrail
 
@@ -208,10 +307,10 @@ the lifecycle's interaction mode (spec 0005 R10):
 
 | Mode | Non-blocking finding handling |
 |---|---|
-| **FULL** | Apply `AGENTS.md` → *Team Communication → Rule 4*: the orchestrator presents every non-blocking finding to the user and routes only those the user accepts into the loop. Findings the user defers are journalled in the logbook and left unactioned. |
-| **INTERMEDIATE** | The orchestrator SHALL route every non-blocking finding into the loop using the same precedence matrix as blocking findings; the REVIEW loop fires no user gate (spec 0005 R10 as amended for #288). |
-| **MINIMAL** | Same as INTERMEDIATE — every non-blocking finding is routed via the precedence matrix; no user gate. |
-| **AUTO** | Same as MINIMAL — non-blocking becomes effectively blocking, routed via the matrix. |
+| **FULL** | The orchestrator SHALL present every non-blocking finding to the user. The user SHALL choose per finding: **loop** (routed into the retroactive loop via the blocking matrix), **ledger** (routed to the findings ledger), or **dismiss** (journalled in the logbook and left unactioned). |
+| **INTERMEDIATE** | The orchestrator SHALL route every non-blocking finding to the **ledger** by default. No user gate SHALL fire. |
+| **MINIMAL** | Same as INTERMEDIATE — the orchestrator SHALL route to the ledger by default; no user gate SHALL fire. |
+| **AUTO** | Same as MINIMAL — the orchestrator SHALL route to the ledger by default; no user gate SHALL fire. |
 
 The asymmetry reflects the lifecycle's gating philosophy: only FULL
 keeps the user in the loop during REVIEW and gives the user the last
@@ -246,3 +345,4 @@ route today") rather than a literal record of label state.
 - Spec format and delta-spec convention — [`docs/spec-format.md`](spec-format.md).
 - Spec-PR workflow — [`specs/0003-spec-pr-workflow.md`](../specs/0003-spec-pr-workflow.md) and `AGENTS.md` → *Spec-PR workflow*.
 - Team Communication Rule 4 — `AGENTS.md` → *Agent Team Protocol → Team Communication*.
+- Reviewer seat contract — [`docs/reviewer-seat.md`](reviewer-seat.md) and [`specs/0166-stable-reviewer-seat.md`](../specs/0166-stable-reviewer-seat.md).

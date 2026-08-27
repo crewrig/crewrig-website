@@ -31,6 +31,7 @@ be introduced without first amending this document.
 | `version` | semver | yes | Starts at `1.0.0` on the initial spec. Bumps follow the delta-spec convention below. |
 | `max-iterations` | integer | no | Overrides the ADR-0010 default of 5. Bounded `[1, 20]` inclusive. Omit to inherit the default. |
 | `superseded-by` | string | conditional | Required when `status: superseded`, prohibited otherwise. Value is the `id` of the spec that supersedes this one. |
+| `unsecured-id` | boolean | no | **Absent by default, and carries meaning only when present and `true`.** Marks a spec whose `id` was allocated locally but never secured on the reference repository — the fallback of `specs/0112-spec-id-reservation.md` requirement 9, reached when the author is offline or contributing from a fork. `scripts/reserve-spec-id.sh` emits this exact line on stdout on its exit-3 path, so the author pastes rather than composes it. `scripts/check-spec-id-reserved.sh` reports the condition at pull-request time: blocking for a pull request from the reference repository, non-blocking for one from a fork. The mark SHALL be removed in the same act that secures the id (requirement 10) — a merged spec never carries it. Never back-filled onto an existing spec. |
 
 ### Worked frontmatter
 
@@ -192,13 +193,56 @@ table below is the contract.
 | `status` | Trigger | Authority | Accompanying artifact |
 |---|---|---|---|
 | `draft` | Spec file opened in the working branch | Spec author (human or `spec-author` skill) | Spec file in the worktree, no PR yet |
-| `approved` | Spec PR merged on `main` | Spec reviewer (per the interaction mode declared in frontmatter) | Merged spec PR + logbook comment recording the approval |
-| `implemented` | Implementation PR for `related-issue` merged on `main` | Implementation team's `pr-logbook` | Merged implementation PR + logbook closure comment |
+| `approved` | Spec PR merged on `main` | Spec reviewer (per the interaction mode declared in frontmatter) | Merged spec PR — its own (squash) commit already carries `status: approved`, so no separate status-transition PR is opened — plus a logbook comment recording the approval |
+| `implemented` | Implementation PR for `related-issue` merged on `main` | Implementation team's `pr-logbook` | Merged implementation PR — its own (squash) commit already carries `status: implemented`, so no separate status-transition PR is opened — plus a logbook closure comment |
 | `archived` | Related issue closed without implementation (`won't fix`, duplicate, abandoned) | Ticket closer | Logbook comment explaining the archival |
 | `superseded` | A newer spec replaces this one (often through a `spec`-class loop that grows beyond a delta) | Author of the superseding spec | `superseded-by` field set; superseding spec exists with its own id |
 
 A `status` regression (e.g. `approved` → `draft`) is prohibited; if a
 spec must be re-opened, supersede it instead.
+
+### No spec on `main` is a draft
+
+A spec file present on `main`, other than a delta-spec, SHALL NOT carry
+`status: draft`. A spec reaches `main` only by its own merged spec-PR, which is
+the trigger the table above assigns to `approved`; `draft` on `main` therefore
+records a contradiction rather than a lagging value, and leaves a reader unable
+to use `status` for the one question it exists to answer — "merged and in
+force" or "proposed but never landed".
+
+The rule is enforced mechanically rather than by recall. The spec linter
+(`scripts/lib/spec-linter.js`, run as `task spec:lint` in CI) enforces status
+invariants across all pull requests and on `main` (governed by
+[`specs/0109-spec-status-invariant-on-main.md`](../specs/0109-spec-status-invariant-on-main.md)
+and [`specs/0168-spec-status-transition-enforcement.md`](../specs/0168-spec-status-transition-enforcement.md)):
+
+- **Spec PRs (`spec/<NNNN>-*` or introducing a new spec):** CI fails (`[FAIL]`)
+  if an added or modified non-delta spec file carries `status: draft`. The spec
+  must transition to `status: approved` (and declare `interaction-mode`) before
+  merging to `main`.
+- **Implementation PRs (`(feat|fix|refactor|perf|chore)/<NNNN>-*`):** CI fails
+  (`[FAIL]`) if the corresponding specification file `specs/<NNNN>-*.md` does not
+  carry `status: implemented`.
+- **Base branch status check:** The linter names every non-delta spec already
+  present on the change's base branch that carries `status: draft`. Delta-specs
+  are exempt per Spec 0109.
+
+**Which build the violation fails, and which it only warns.** Being named and
+being failed are two different things, decided by two different questions. A
+change that **modifies** a named spec is failed by it (`[FAIL]`), because it can
+record the correct status in the same edit. A change that does not — a pull
+request touching no spec at all, say — gets the same spec named as a
+**non-blocking** warning (`[WARN]`) and passes: a check a change has no power to
+satisfy must not block it. The build that does fail in that case is the base
+branch's own, where `HEAD` is the base and there is therefore no change to
+charge the violation to. So **a `[WARN]` met on a pull request is a statement
+about `main`, not about that pull request**: it is cleared by correcting the
+named spec's status on the base branch, and nothing in the change under test
+will make it go away. When the linter cannot determine which files the change
+modifies, it reports every named spec as blocking and says so — an
+indeterminate answer never becomes an exemption.
+[`specs/0109-spec-status-invariant-on-main.delta-02.md`](../specs/0109-spec-status-invariant-on-main.delta-02.md)
+is the contract.
 
 ### Recording a status transition
 
@@ -207,18 +251,85 @@ The append-only rule (see *Delta-spec convention*) governs a spec's
 `## Scenarios`, `## Out of scope`, `## Open questions`) and the identifying
 frontmatter fields (`id`, `slug`). It does **not** freeze the
 lifecycle-tracking metadata: the `status` and `superseded-by` fields are
-*expected* to change after merge, since the table above defines transitions
-that occur once the spec PR, the implementation PR, or a superseding spec
-lands.
+*expected* to change, since the table above defines transitions the spec
+undergoes over its life.
 
-Such a transition SHALL be recorded by a **metadata-only edit** to the
-merged spec's frontmatter. The authority named in the table above changes
-the `status` field (and sets `superseded-by` when moving to `superseded`)
-and touches nothing else — no body line, no `id`, no `slug`, no `version`.
-A diff that alters any normative content under cover of a status bump is a
-violation. The `version` field stays immutable on the original after merge;
-the cumulative version lives on the highest-numbered delta (per
-*Versioning*).
+Those transitions divide into three kinds, recorded differently. The first,
+`draft` → `approved`, is recorded **inside the spec-PR's own commit**, so the
+spec lands on `main` already carrying `status: approved`. The second,
+`approved` → `implemented`, is recorded **inside the implementation PR's own
+commit**, so the spec carries `status: implemented` the moment its
+implementation lands on `main`. Every **later** transition — `→ superseded`,
+`→ archived` — is recorded **after** the spec has merged, by a metadata-only
+edit to the merged spec's frontmatter. The three cases are defined in turn
+below.
+
+**Recording the initial `draft` → `approved` transition (in the spec-PR).**
+Every interaction mode has a real approval event whose grant the recorded
+`status: approved` reflects, but **which** user gate constitutes that event
+is mode-dependent. In `FULL`, `INTERMEDIATE`, and `MINIMAL` the approval
+event is the **SPECS-stage content-approval gate**; because the approved
+spec content becomes a one-file spec-PR that merges unchanged, that same
+content-approval discharges the spec-PR's merge-authorization request, which
+is therefore not fired a second time (see
+[`interaction-modes.md`](interaction-modes.md) → *User-gate definition*). In
+`AUTO`, where no SPECS-stage content-approval gate runs, the approval event
+is the **merge-authorization request**, which still fires and remains the
+sole approval event. The rule is thus mode-independent in effect — no mode
+lacks a real approval decision to record — while the gate that constitutes
+that decision differs by mode. The transition SHALL be recorded **only
+after** that approval event has been secured; recording `status: approved`
+ahead of it is a violation, because a recorded `approved` status must reflect
+an approval decision that has actually been made, not one presumed before it.
+The edit stays **metadata-only** in the sense the
+next paragraph defines: it sets `status` to `approved` and, when
+`interaction-mode` was omitted while the spec was `draft`, sets
+`interaction-mode` to the mode the spec was qualified under (the frontmatter
+schema requires it to be present once a spec is `approved`); it touches no
+body line, no `id`, no `slug`, and no `version`. Recorded this way, the merged
+spec-PR carries `status: approved` at the moment it lands on `main` — a merged
+spec is never at once merged and still `draft` — and **no** separate,
+post-merge, metadata-only pull request is required to record the approval.
+
+*Merge mechanic.* Strictly **after** the approval event has been secured
+and strictly **before** running `bash scripts/merge-spec-pr.sh`, on the spec-PR branch
+(`spec/<NNNN>-<slug>`) edit the spec's frontmatter (`status: draft` →
+`status: approved`, adding `interaction-mode` if it was omitted during
+`draft`), create a **new commit** — not `git commit --amend` — then `git push`
+and only then `bash scripts/merge-spec-pr.sh`. A new commit rather than an amend
+because the spec-PR squash-merges, so both routes collapse to the same single
+commit on `main` carrying `status: approved`; a new commit needs only a plain
+`git push`, whereas an amend would force `git push --force-with-lease` and
+risk clobbering a concurrent reviewer or CI push on the shared branch.
+
+**Recording the `approved` → `implemented` transition (in the implementation
+PR).** The `implemented` transition is triggered by the merge of the
+implementation PR for the spec's `related-issue` — a genuinely later, separate
+event that cannot be folded into the spec-PR that introduces the spec, but
+**can** be folded into the implementation PR itself. On the implementation
+feature branch, before the implementation PR merges, edit the spec's
+frontmatter (`status: approved` → `status: implemented`), create a **new
+commit** — not `git commit --amend` — then `git push`. The implementation PR
+squash-merges, so the transition rides the implementation PR's own squash
+commit and the spec lands on `main` already carrying `status: implemented` at
+the moment its implementation lands. The authority named in the table above
+(the implementation team's `pr-logbook`) performs the edit; it touches nothing
+else — no body line, no `id`, no `slug`, no `version`. A diff that alters any
+normative content under cover of the status bump is a violation. No separate,
+post-merge, metadata-only pull request is required to record the transition.
+
+**Recording a post-merge transition (every other transition).** Every
+transition other than `draft` → `approved` and `approved` → `implemented` —
+`→ superseded`, `→ archived` — is triggered by a genuinely later, separate
+event (a superseding spec landing, a ticket closed without implementation)
+that cannot be folded into the spec-PR that introduces the spec, and so is
+recorded **after** merge by a **metadata-only edit** to the merged spec's
+frontmatter. The authority named in the table above changes the `status` field
+(and sets `superseded-by` when moving to `superseded`) and touches nothing
+else — no body line, no `id`, no `slug`, no `version`. A diff that alters any
+normative content under cover of a status bump is a violation. The `version`
+field stays immutable on the original after merge; the cumulative version
+lives on the highest-numbered delta (per *Versioning*).
 
 This carve-out admits lifecycle metadata. A second, equally narrow carve-out
 admits meaning-preserving editorial edits to body prose; it is defined next.

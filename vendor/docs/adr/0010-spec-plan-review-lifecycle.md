@@ -50,13 +50,16 @@ art for the staging discipline and the filesystem-first artifact model.
 ## Decision
 
 CrewRig adopts a **four-stage lifecycle** for every non-trivial
-ticket:
+ticket, with an optional pre-SPECS convergence stage:
 
 ```text
-SPECS  ──▶  PLAN  ──▶  DEV  ──▶  REVIEW ──▶  MERGE
-                                    │
-                                    └── loops back on findings
+[IDEA] ──▶  SPECS  ──▶  PLAN  ──▶  DEV  ──▶  REVIEW ──▶  MERGE
+ (opt.)                                          │
+                                                 └── loops back on findings
 ```
+
+The IDEA stage is optional and explicitly triggered (see *Stage definitions →
+IDEA*). Tickets that do not require convergence proceed directly to SPECS.
 
 - **SPECS**, **PLAN**, and **DEV** are *linear* stages: each runs
   once per iteration of the lifecycle, in order.
@@ -87,10 +90,52 @@ and the routing engine land in dedicated tickets:
 
 | Stage | Produces | Artifact location | Entry criteria | Exit criteria |
 |---|---|---|---|---|
-| **SPECS** | A specification (the WHAT) | Spec file under `/specs/<spec-id>/` (format defined in #167) | A ticket exists with a user-evoked intent | Spec PR is merged on `main` (mode-dependent: see *Interaction modes*) |
+| **IDEA** *(optional)* | A converged intent + one or more SPECS issues | Session issue on the forge (labeled `idea-session`; closed with `idea-resolved` or `idea-no-consensus`) | Explicit `idea` skill invocation with `--mode` and `--issue` | Session issue closed with a terminal label (R14 of spec 0066) |
+| **SPECS** | A specification (the WHAT) | Spec file under `/specs/<spec-id>/` (format defined in #167) | A ticket exists with a user-evoked intent (may originate from a resolved IDEA session) | Spec PR is merged on `main` (mode-dependent: see *Interaction modes*) |
 | **PLAN** | A plan (the HOW: steps, blast radius, alternatives) | Comment on the logbook issue (format defined in #169) | A merged spec on `main` for this ticket | Plan is approved on the logbook issue (mode-dependent) |
 | **DEV** | Implementation diff | Feature branch in a dedicated worktree (per `AGENTS.md` → *Worktree Isolation*) | An approved plan on the logbook | A PR is opened and CI is green |
 | **REVIEW** | A verdict + zero or more findings | PR comment (`pr-reviewer` verdict format, per `AGENTS.md`) | An open PR with green CI | Verdict is APPROVE with zero findings of any class |
+
+### IDEA
+
+**Purpose.** The IDEA stage is an optional convergence layer positioned before
+SPECS. It is designed for situations where multiple competing, overlapping, or
+complementary proposals exist for a problem and must be resolved into a single
+intent before a spec can be written. Tickets that begin with a single clear
+intent MAY skip IDEA and proceed directly to SPECS.
+
+**Entry trigger.** IDEA is entered only when the `idea` skill is explicitly
+invoked with both `--mode=<governance-mode>` and `--issue=<parent-issue-number>`.
+There is no automatic entry condition; the stage is never triggered by the
+lifecycle engine.
+
+**Governance modes.** Three modes are supported:
+
+- `solo` — a single named owner; the session closes when the owner casts
+  `VOTE: APPROVE`.
+- `unanimity` — a declared set of owners; the session closes when every owner
+  has cast `VOTE: APPROVE`.
+- `vote` — a named voter set and a quorum threshold (integer percentage, e.g.
+  `60`); the session closes when the threshold is reached among cast non-ABSTAIN
+  votes.
+
+The declared governance mode and all its parameters are immutable for the
+lifetime of the session.
+
+**Exit — resolved path.** When the declared governance threshold is met, the
+skill posts a closing comment naming the winning proposal and vote tally, creates
+one or more SPECS issues pre-populated with the winning proposal as the intent
+statement, and closes the session issue with the label `idea-resolved`. Each
+created SPECS issue cross-references the IDEA session issue.
+
+**Exit — no-consensus path.** The session owner may close the session at any time
+without reaching the governance threshold by adding the label `idea-no-consensus`
+and posting a mandatory closure comment. No SPECS issue is created; the parent
+issue remains open for a future attempt.
+
+**Relationship to SPECS.** IDEA feeds SPECS; it does not replace it. A resolved
+IDEA session produces one or more SPECS issues, each of which enters the SPECS
+stage independently. The SPECS contract defined in this ADR is unchanged.
 
 Normative transition rules:
 
@@ -101,7 +146,9 @@ Normative transition rules:
    triggered by the loop.
 3. A SPECS or PLAN stage that produces no normative change MUST still
    emit an artifact (an "unchanged" delta spec, or a one-line plan
-   confirmation) so the audit trail records that the stage ran.
+   confirmation) so the audit trail records that the stage ran. At the
+   `trivial` tier, that one-line plan confirmation IS a sufficient
+   PLAN artifact (R2 of spec 0138).
 4. The lifecycle MUST be anchored to a logbook (per `AGENTS.md` →
    *Logbook Issues*). Stage transitions are journalled there.
 
@@ -221,12 +268,12 @@ The spec SHALL declare a complexity tier. The tier drives team
 composition for the DEV stage. The spec reviewer (whoever approves
 the spec PR) validates the tier.
 
-| Tier | Team for DEV | Notes |
-|---|---|---|
-| **trivial** | inline (orchestrator only) | No team spawn, no worktree, no logbook (the issue itself suffices). Reserved for single-file edits with no test surface. |
-| **small** | `developer` + `pr-logbook` + `pr-reviewer` | Worktree required. No architect, no tester. |
-| **standard** | Templates 1 / 2 / 3 from `AGENTS.md` → *Agent Team Protocol* | Current default. |
-| **large** | `architect`-led decomposition into sub-specs, then one standard team per sub-spec | Each sub-spec gets its own spec PR (chained via the delta mechanism). |
+| Tier | Team for DEV | PLAN-revision cap | Notes |
+|---|---|---|---|
+| **trivial** | inline (orchestrator only) | 1 | No team spawn, no worktree, no logbook (the issue itself suffices). Reserved for single-file edits with no test surface. |
+| **small** | `developer` + `pr-logbook` + `pr-reviewer` | 1 | Worktree required. No architect, no tester. |
+| **standard** | Templates 1 / 2 / 3 from `AGENTS.md` → *Agent Team Protocol* | 2 | Current default. |
+| **large** | `architect`-led decomposition into sub-specs, then one standard team per sub-spec | 5 | Each sub-spec gets its own spec PR (chained via the delta mechanism). |
 
 Normative rules:
 
@@ -237,6 +284,12 @@ Normative rules:
    routed through the PLAN loop with an updated team.
 3. Tier de-escalation (standard → small) is prohibited mid-lifecycle.
    The cost of running the larger team is already sunk.
+4. The PLAN-revision cap column above is the single source of truth
+   for those numbers; `docs/plan-review-protocol.md` defines the halt
+   semantics applied when a ticket's cap would be exceeded (R3–R4 of
+   spec 0138).
+
+These clauses bound the plan's size and the loop's length; they remove no item from the reviewer's checklist at any tier.
 
 ## REVIEW loop termination
 
@@ -306,11 +359,13 @@ items carry parity load, tracked in their own tickets:
   and is compiled to all three CLIs by `scripts/build-components.sh`
   (#174). No CLI-specific gap is anticipated.
 - The retroactive routing engine (#172) is orchestrator-side logic.
-  Claude Code's team primitives (`TeamCreate` / `TaskCreate` /
-  `SendMessage`) make it directly expressible; Gemini CLI's
-  sequential-spawn fallback (per `AGENTS.md` → *On CLIs without team
-  support*) requires loop bookkeeping in the orchestrator's
-  conversation state. Copilot CLI parity will be assessed in #172.
+  Claude Code's single implicit session team makes it directly
+  expressible — delegation via `Agent` (with an explicit
+  `subagent_type`), tracking via `TaskCreate`, and coordination via
+  `SendMessage`; Gemini CLI's sequential-spawn parity (per `AGENTS.md`
+  → *On CLIs with no multi-agent coordination surface*) requires loop
+  bookkeeping in the orchestrator's conversation state. Copilot CLI
+  parity will be assessed in #172.
 - The interaction-mode notification surface (#173) reuses the
   logbook issue, which is GitHub-side and therefore CLI-agnostic.
 
@@ -335,7 +390,7 @@ These examples define expected artifacts so downstream tickets
 | Stage | Artifact | Content |
 |---|---|---|
 | SPECS | Spec id `2026-T-0001-readme-typo` | Single-line WHAT: "Fix spelling of 'receive' in README.md." Tier: `trivial`. Mode: INTERMEDIATE. |
-| PLAN | (skipped for trivial) | — |
+| PLAN | One-line confirmation on the ticket issue | "No design decisions beyond the spec; proceeding to DEV." |
 | DEV | Inline edit by orchestrator | One-line diff. |
 | REVIEW | Self-review by orchestrator | Expected classes: none. |
 

@@ -47,6 +47,16 @@
           "title": "Authoring skills, agents & commands",
           "path": "docs/authoring.md",
           "nav_order": 10
+        },
+        {
+          "title": "Extension authoring",
+          "path": "docs/extension-authoring.md",
+          "nav_order": 20
+        },
+        {
+          "title": "Extension MCP servers",
+          "path": "docs/extension-mcp-servers.md",
+          "nav_order": 30
         }
       ]
     },
@@ -58,6 +68,11 @@
           "title": "Retroactive review loop",
           "path": "docs/retroactive-loop.md",
           "nav_order": 10
+        },
+        {
+          "title": "Reviewer seat",
+          "path": "docs/reviewer-seat.md",
+          "nav_order": 20
         }
       ]
     },
@@ -100,6 +115,21 @@
           "title": "Documentation publication contract",
           "path": "docs/publication-contract.md",
           "nav_order": 50
+        },
+        {
+          "title": "CI capability reference format",
+          "path": "docs/ci-reference-format.md",
+          "nav_order": 60
+        },
+        {
+          "title": "Org MCP server declaration channel",
+          "path": "docs/org-mcp-declaration.md",
+          "nav_order": 70
+        },
+        {
+          "title": "Extension hook events",
+          "path": "docs/extension-hook-events.md",
+          "nav_order": 80
         }
       ]
     },
@@ -171,6 +201,31 @@
           "title": "ADR 0011 — Artifact build/install scope model",
           "path": "docs/adr/0011-artifact-build-install-scope.md",
           "nav_order": 110
+        },
+        {
+          "title": "ADR 0012 — CI capability reference contract",
+          "path": "docs/adr/0012-ci-reference-contract.md",
+          "nav_order": 120
+        },
+        {
+          "title": "ADR 0013 — User-space system-context store",
+          "path": "docs/adr/0013-user-space-system-context-store.md",
+          "nav_order": 130
+        },
+        {
+          "title": "ADR 0014 — CI test-wiring guard",
+          "path": "docs/adr/0014-ci-test-wiring-guard.md",
+          "nav_order": 140
+        },
+        {
+          "title": "ADR 0015 — Forge access CLI-only; no framework forge MCP",
+          "path": "docs/adr/0015-forge-access-cli-only.md",
+          "nav_order": 150
+        },
+        {
+          "title": "ADR 0016 — Shared MemPalace MCP HTTP server",
+          "path": "docs/adr/0016-shared-mempalace-mcp-http-server.md",
+          "nav_order": 160
         }
       ]
     }
