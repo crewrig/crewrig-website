@@ -7,6 +7,10 @@
  *   F4 (must) — strip the page's `crewrig-doc:` metadata block by keying on
  *     the sentinel, on the RAW markdown before render, so it never reaches the
  *     output (markdown-it, like most pipelines, passes HTML comments through).
+ *     Fence-aware (bugfix, crewrig-website#32): the strip only fires OUTSIDE a
+ *     fenced code block, so a fence that merely illustrates the metadata
+ *     grammar (e.g. publication-contract.md's own "Example" section) survives
+ *     verbatim instead of being silently emptied.
  *   F1 (must) — rewrite EVERY relative link (any extension, not just `.md`):
  *     resolve against the page's repo-root path; in-manifest -> `/docs/<slug>`,
  *     out-of-manifest -> absolute upstream blob URL at the pinned ref. Leave
@@ -154,8 +158,7 @@ function rewriteImage(src: string, pagePath: string): string {
  *     and removing the literal brace text (F2)
  */
 function preprocess(raw: string): { source: string; ids: Map<number, string> } {
-  const withoutMeta = raw.replace(METADATA_BLOCK, '');
-  const lines = withoutMeta.split('\n');
+  const lines = raw.split('\n');
   const ids = new Map<number, string>();
   let headingCount = 0;
   let inFence = false;
@@ -164,6 +167,11 @@ function preprocess(raw: string): { source: string; ids: Map<number, string> } {
     const fenceMatch = /^(\s*)(```|~~~)/.test(line);
     if (fenceMatch) inFence = !inFence;
     if (inFence || fenceMatch) return line;
+
+    // F4 — strip the metadata block, but only OUTSIDE a fenced code block: a
+    // fence illustrating the grammar (e.g. publication-contract.md's own
+    // "Example" section) must survive verbatim, not be silently emptied.
+    line = line.replace(METADATA_BLOCK, '');
 
     if (/^#{1,6}\s/.test(line)) {
       const m = line.match(HEADING_ID);
