@@ -1,6 +1,6 @@
 # CrewRig — Showcase Website
 
-The official showcase site for [CrewRig](https://github.com/crewrig/crewrig), the shared configuration framework that lets development teams coordinate AI tools (Claude Code, Gemini CLI) at team scale.
+The official showcase site for [CrewRig](https://github.com/crewrig/crewrig), the shared configuration framework that lets development teams coordinate AI tools (Claude Code, Gemini CLI, GitHub Copilot CLI, Antigravity CLI) at team scale.
 
 **Live site:** https://crewrig.github.io/crewrig-website/
 

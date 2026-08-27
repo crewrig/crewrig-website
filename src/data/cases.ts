@@ -53,7 +53,7 @@ export interface Hero {
 
 export const hero: Hero = {
   badge:
-    'Open source · Works with Claude Code, Gemini CLI & GitHub Copilot CLI',
+    'Open source · Works with Claude Code, Gemini CLI, GitHub Copilot CLI & Antigravity CLI',
   headline:
     "Your team's AI context, built once — not rebuilt by everyone.",
   subHeadline:
@@ -96,7 +96,7 @@ export const cases: Case[] = [
     problem:
       "Marcus has spent months teaching his agent the quirks of Quaymont's freight-routing service — the edge cases, the workarounds, the reasons behind odd decisions. But all of it lives in his local session history. When he switches machines, or a teammate picks up the service, that hard-won context is gone, and the next agent starts blind.",
     solution:
-      "CrewRig wires agents into MemPalace, a persistent memory layer that survives across sessions and across tools. What an agent learns in one session — decisions, obstacles, the reasoning behind a fix — is written once and readable later, by Marcus or by a teammate's agent, whether they're on Claude Code, Gemini CLI, or Copilot.",
+      "CrewRig wires agents into MemPalace, a persistent memory layer that survives across sessions and across tools. What an agent learns in one session — decisions, obstacles, the reasoning behind a fix — is written once and readable later, by Marcus or by a teammate's agent, whether they're on Claude Code, Gemini CLI, GitHub Copilot CLI, or Antigravity CLI.",
     illustration: {
       file: 'shared-memory.png',
       alt: "Marcus packs up to leave in the evening while a warm glowing archive of memory drawers persists behind him, its violet light reaching toward Lena's screen nearby.",
@@ -112,7 +112,7 @@ export const cases: Case[] = [
     problem:
       "Lena writes a genuinely useful agent skill — a review helper tuned to the team's conventions. A week later she finds Marcus has built almost the same thing for Gemini CLI, because hers only worked in Claude Code. The capability the team needed already existed; it just couldn't travel.",
     solution:
-      'In CrewRig, skills, agents, and commands are authored once as a single Markdown file in artifacts/. One build step (scripts/build-components.sh) compiles that source into outputs for Claude Code, Gemini CLI, and GitHub Copilot CLI. Lena writes the skill one time; her teammates install it on any supported CLI.',
+      'In CrewRig, skills, agents, and commands are authored once as a single Markdown file in artifacts/. One build step (scripts/build-components.sh) compiles that source into outputs for Claude Code, Gemini CLI, GitHub Copilot CLI, and Antigravity CLI. Lena writes the skill one time; her teammates install it on any supported CLI.',
     illustration: {
       file: 'authoring-sharing.png',
       alt: 'Lena watches a single authored document fan out into three identical glowing copies flowing toward terminals labelled Claude Code, Gemini, and Copilot, as Marcus and Aisha lean in.',
@@ -142,9 +142,9 @@ export const cases: Case[] = [
     title: 'Switch the tool, rebuild everything',
     persona: { name: 'Aisha Diallo', role: 'DevX / tooling engineer' },
     problem:
-      'Aisha moves between Claude Code, Gemini CLI, and Copilot depending on the task. Without a shared layer, each tool is its own island: her profile, her skills, her team\'s conventions all have to be rebuilt per CLI. Trying a different tool means rewriting her whole setup — so in practice, nobody does.',
+      'Aisha moves between Claude Code, Gemini CLI, GitHub Copilot CLI, and Antigravity CLI depending on the task. Without a shared layer, each tool is its own island: her profile, her skills, her team\'s conventions all have to be rebuilt per CLI. Trying a different tool means rewriting her whole setup — so in practice, nobody does.',
     solution:
-      'CrewRig holds one source configuration in config/ and artifacts/, and its setup and build scripts deploy it into each CLI\'s own directory. The same layered context and the same skills run on Claude Code, Gemini CLI, and GitHub Copilot CLI. Aisha switches tools without rebuilding her setup — the context follows her.',
+      'CrewRig holds one source configuration in config/ and artifacts/, and its setup and build scripts deploy it into each CLI\'s own directory. The same layered context and the same skills run on Claude Code, Gemini CLI, GitHub Copilot CLI, and Antigravity CLI. Aisha switches tools without rebuilding her setup — the context follows her.',
     illustration: {
       file: 'multi-cli-parity.png',
       alt: 'Aisha at a multi-monitor setup with three CLIs open side by side, a single continuous ribbon of violet light bridging the same configuration across all three screens.',

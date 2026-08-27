@@ -43,6 +43,16 @@ test.describe('Structure', () => {
     expect(href).toContain('#case-');
   });
 
+  test('Hero badge names all four supported CLIs', async ({ page }) => {
+    await page.goto('./');
+    // The badge is CSS text-transform: uppercase, so compare case-insensitively —
+    // innerText reflects the rendered (all-caps) text, not the source casing.
+    const heroText = (await page.locator('section#hero').innerText()).toLowerCase();
+    for (const cli of ['Claude Code', 'Gemini CLI', 'GitHub Copilot CLI', 'Antigravity CLI']) {
+      expect(heroText).toContain(cli.toLowerCase());
+    }
+  });
+
   // --- Five-case narrative ---------------------------------------------------
 
   test('exactly five case sections render', async ({ page }) => {
@@ -88,41 +98,56 @@ test.describe('Structure', () => {
 
   // --- QuickStart CLI-toggle tests (PRESERVED — regression #12) ---------------
 
-  test('QuickStart: CLI toggle — 7 pre blocks total in DOM', async ({ page }) => {
+  test('QuickStart: CLI toggle — 9 pre blocks total in DOM', async ({ page }) => {
     await page.goto('./');
-    // Step 1 (clone) + steps 3-4 × 3 CLIs = 7 pre blocks in DOM
+    // Step 1 (clone) + steps 3-4 × 4 CLIs = 9 pre blocks in DOM
     const pres = page.locator('section#quick-start pre');
-    await expect(pres).toHaveCount(7);
+    await expect(pres).toHaveCount(9);
   });
 
-  test('QuickStart: Claude tab active by default, Gemini and Copilot hidden', async ({ page }) => {
+  test('QuickStart: Claude tab active by default, Gemini, Copilot and Antigravity hidden', async ({ page }) => {
     await page.goto('./');
     const claudeBlock = page.locator('section#quick-start [data-cli="claude"]').first();
     const geminiBlock = page.locator('section#quick-start [data-cli="gemini"]').first();
     const copilotBlock = page.locator('section#quick-start [data-cli="copilot"]').first();
+    const antigravityBlock = page.locator('section#quick-start [data-cli="antigravity"]').first();
     await expect(claudeBlock).toBeVisible();
     await expect(geminiBlock).toBeHidden();
     await expect(copilotBlock).toBeHidden();
+    await expect(antigravityBlock).toBeHidden();
   });
 
-  test('QuickStart: toggle to Gemini shows Gemini panels, hides Claude and Copilot', async ({ page }) => {
+  test('QuickStart: toggle to Gemini shows Gemini panels, hides Claude, Copilot and Antigravity', async ({ page }) => {
     await page.goto('./');
     await page.click('#btn-gemini');
     const claudeBlock = page.locator('section#quick-start [data-cli="claude"]').first();
     const geminiBlock = page.locator('section#quick-start [data-cli="gemini"]').first();
     const copilotBlock = page.locator('section#quick-start [data-cli="copilot"]').first();
+    const antigravityBlock = page.locator('section#quick-start [data-cli="antigravity"]').first();
     await expect(geminiBlock).toBeVisible();
     await expect(claudeBlock).toBeHidden();
     await expect(copilotBlock).toBeHidden();
+    await expect(antigravityBlock).toBeHidden();
   });
 
-  test('QuickStart: toggle to GitHub Copilot shows Copilot panels, hides Claude and Gemini', async ({ page }) => {
+  test('QuickStart: toggle to GitHub Copilot shows Copilot panels, hides Claude, Gemini and Antigravity', async ({ page }) => {
     await page.goto('./');
     await page.click('#btn-copilot');
     await expect(page.locator('#panel-copilot-3')).toBeVisible();
     await expect(page.locator('#panel-copilot-4')).toBeVisible();
     await expect(page.locator('#panel-claude-3')).toBeHidden();
     await expect(page.locator('#panel-gemini-3')).toBeHidden();
+    await expect(page.locator('#panel-antigravity-3')).toBeHidden();
+  });
+
+  test('QuickStart: toggle to Antigravity shows Antigravity panels, hides Claude, Gemini and Copilot', async ({ page }) => {
+    await page.goto('./');
+    await page.click('#btn-antigravity');
+    await expect(page.locator('#panel-antigravity-3')).toBeVisible();
+    await expect(page.locator('#panel-antigravity-4')).toBeVisible();
+    await expect(page.locator('#panel-claude-3')).toBeHidden();
+    await expect(page.locator('#panel-gemini-3')).toBeHidden();
+    await expect(page.locator('#panel-copilot-3')).toBeHidden();
   });
 
   // --- Regression tests for issue #12 ---------------------------------------
@@ -133,26 +158,28 @@ test.describe('Structure', () => {
   //   3. Init commands use `gh copilot /init-…` instead of the standalone
   //      `copilot -i "/init-…"` syntax.
 
-  test('QuickStart Copilot tab: exactly one visible "Step 2" label (regression #12 — bug 1)', async ({ page }) => {
-    await page.goto('./');
-    await page.click('#btn-copilot');
-    const step2Labels = page.locator('section#quick-start *', { hasText: /^\s*Step 2\b/ });
-    // Count only the leaf elements that directly contain a "Step 2" text node
-    // and are visible — i.e. the section header tiles, not ancestor wrappers.
-    const visibleStep2 = await step2Labels.evaluateAll((nodes) =>
-      nodes.filter((n) => {
-        const direct = Array.from(n.childNodes)
-          .filter((c) => c.nodeType === Node.TEXT_NODE)
-          .map((c) => (c.textContent ?? '').trim())
-          .join(' ');
-        if (!/^Step 2\b/.test(direct)) return false;
-        const rect = (n as HTMLElement).getBoundingClientRect();
-        const style = window.getComputedStyle(n as HTMLElement);
-        return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-      }).length,
-    );
-    expect(visibleStep2).toBe(1);
-  });
+  for (const tabId of ['btn-claude', 'btn-gemini', 'btn-copilot', 'btn-antigravity']) {
+    test(`QuickStart ${tabId} tab: exactly one visible "Step 2" label (regression #12 — bug 1)`, async ({ page }) => {
+      await page.goto('./');
+      await page.click(`#${tabId}`);
+      const step2Labels = page.locator('section#quick-start *', { hasText: /^\s*Step 2\b/ });
+      // Count only the leaf elements that directly contain a "Step 2" text node
+      // and are visible — i.e. the section header tiles, not ancestor wrappers.
+      const visibleStep2 = await step2Labels.evaluateAll((nodes) =>
+        nodes.filter((n) => {
+          const direct = Array.from(n.childNodes)
+            .filter((c) => c.nodeType === Node.TEXT_NODE)
+            .map((c) => (c.textContent ?? '').trim())
+            .join(' ');
+          if (!/^Step 2\b/.test(direct)) return false;
+          const rect = (n as HTMLElement).getBoundingClientRect();
+          const style = window.getComputedStyle(n as HTMLElement);
+          return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+        }).length,
+      );
+      expect(visibleStep2).toBe(1);
+    });
+  }
 
   test('QuickStart Copilot tab: no "gh extension install" command visible (regression #12 — bug 2)', async ({ page }) => {
     await page.goto('./');
@@ -172,21 +199,42 @@ test.describe('Structure', () => {
     expect(text).not.toMatch(/gh\s+copilot\s+\/init-/);
   });
 
-  test('QuickStart: ArrowRight on Copilot tab wraps back to Claude', async ({ page }) => {
+  test('QuickStart: ArrowRight on Antigravity tab wraps back to Claude', async ({ page }) => {
     await page.goto('./');
-    await page.click('#btn-copilot');
-    await page.locator('#btn-copilot').press('ArrowRight');
+    await page.click('#btn-antigravity');
+    await page.locator('#btn-antigravity').press('ArrowRight');
     await expect(page.locator('#panel-claude-3')).toBeVisible();
-    await expect(page.locator('#panel-copilot-3')).toBeHidden();
+    await expect(page.locator('#panel-antigravity-3')).toBeHidden();
     await expect(page.locator('#btn-claude')).toHaveAttribute('aria-selected', 'true');
   });
 
-  test('QuickStart: ArrowLeft on Claude tab wraps to Copilot', async ({ page }) => {
+  test('QuickStart: ArrowRight on Copilot tab selects Antigravity (pins insertion order)', async ({ page }) => {
+    await page.goto('./');
+    await page.click('#btn-copilot');
+    await page.locator('#btn-copilot').press('ArrowRight');
+    await expect(page.locator('#panel-antigravity-3')).toBeVisible();
+    await expect(page.locator('#panel-copilot-3')).toBeHidden();
+    await expect(page.locator('#btn-antigravity')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('QuickStart: ArrowLeft on Claude tab wraps to Antigravity', async ({ page }) => {
     await page.goto('./');
     await page.locator('#btn-claude').press('ArrowLeft');
-    await expect(page.locator('#panel-copilot-3')).toBeVisible();
+    await expect(page.locator('#panel-antigravity-3')).toBeVisible();
     await expect(page.locator('#panel-claude-3')).toBeHidden();
-    await expect(page.locator('#btn-copilot')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#btn-antigravity')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('QuickStart: End selects Antigravity, Home selects Claude', async ({ page }) => {
+    await page.goto('./');
+    await page.locator('#btn-claude').press('End');
+    await expect(page.locator('#panel-antigravity-3')).toBeVisible();
+    await expect(page.locator('#panel-claude-3')).toBeHidden();
+    await expect(page.locator('#btn-antigravity')).toHaveAttribute('aria-selected', 'true');
+    await page.locator('#btn-antigravity').press('Home');
+    await expect(page.locator('#panel-claude-3')).toBeVisible();
+    await expect(page.locator('#panel-antigravity-3')).toBeHidden();
+    await expect(page.locator('#btn-claude')).toHaveAttribute('aria-selected', 'true');
   });
 
   test('QuickStart: clicking a tab updates aria-selected', async ({ page }) => {
@@ -194,10 +242,32 @@ test.describe('Structure', () => {
     await expect(page.locator('#btn-claude')).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('#btn-gemini')).toHaveAttribute('aria-selected', 'false');
     await expect(page.locator('#btn-copilot')).toHaveAttribute('aria-selected', 'false');
+    await expect(page.locator('#btn-antigravity')).toHaveAttribute('aria-selected', 'false');
     await page.click('#btn-copilot');
     await expect(page.locator('#btn-copilot')).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('#btn-claude')).toHaveAttribute('aria-selected', 'false');
     await expect(page.locator('#btn-gemini')).toHaveAttribute('aria-selected', 'false');
+    await expect(page.locator('#btn-antigravity')).toHaveAttribute('aria-selected', 'false');
+    await page.click('#btn-antigravity');
+    await expect(page.locator('#btn-antigravity')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#btn-claude')).toHaveAttribute('aria-selected', 'false');
+    await expect(page.locator('#btn-gemini')).toHaveAttribute('aria-selected', 'false');
+    await expect(page.locator('#btn-copilot')).toHaveAttribute('aria-selected', 'false');
+  });
+
+  test('QuickStart Antigravity tab: content regression — D1-B commands, never the non-existent `agy /init-*`', async ({ page }) => {
+    await page.goto('./');
+    await page.click('#btn-antigravity');
+    const panel3 = page.locator('#panel-antigravity-3');
+    const panel4 = page.locator('#panel-antigravity-4');
+    await expect(panel3).toBeVisible();
+    await expect(panel4).toBeVisible();
+    const text3 = (await panel3.innerText()).trim();
+    expect(text3).toMatch(/claude\s+\/init-personal-profile/);
+    expect(text3).toMatch(/claude\s+\/init-soul/);
+    expect(text3).not.toMatch(/agy\s+\/init-/);
+    const text4 = (await panel4.innerText()).trim();
+    expect(text4).toContain('task setup-antigravity-interactive');
   });
 
   test('Footer: logo image exists', async ({ page }) => {
@@ -248,6 +318,18 @@ test.describe('Responsive', () => {
       }
     });
   }
+
+  test('mobile (390x844): all four QuickStart tab buttons are reachable in viewport (R1 — tab-row wrap guard)', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('./');
+    await page.locator('#quick-start').scrollIntoViewIfNeeded();
+    for (const btnId of ['btn-claude', 'btn-gemini', 'btn-copilot', 'btn-antigravity']) {
+      const btn = page.locator(`#${btnId}`);
+      await expect(btn).toBeInViewport();
+      const box = await btn.boundingBox();
+      expect(box?.width ?? 0).toBeGreaterThan(0);
+    }
+  });
 });
 
 test.describe('Navigation', () => {
