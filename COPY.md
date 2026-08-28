@@ -165,12 +165,10 @@ repo root so Copilot picks up `.github/skills/`.*
 
 ### Step 3 — Initialize (Antigravity CLI)
 ```bash
-claude /init-personal-profile
-claude /init-soul
+agy -i "/init-personal-profile"
+agy -i "/init-soul"
 ```
-*Antigravity CLI reads the same `config/PROFILE.md` and `config/SOUL.md`.
-Generate them once with Claude Code or Gemini CLI, then run the Antigravity
-setup.*
+*Build your personal profile and customize the agent identity.*
 
 ### Step 4 — Setup (Claude Code / Gemini CLI / GitHub Copilot / Antigravity CLI)
 ```bash
