@@ -255,7 +255,7 @@ test.describe('Structure', () => {
     await expect(page.locator('#btn-copilot')).toHaveAttribute('aria-selected', 'false');
   });
 
-  test('QuickStart Antigravity tab: content regression — D1-B commands, never the non-existent `agy /init-*`', async ({ page }) => {
+  test('QuickStart Antigravity tab: init commands use `agy -i` syntax', async ({ page }) => {
     await page.goto('./');
     await page.click('#btn-antigravity');
     const panel3 = page.locator('#panel-antigravity-3');
@@ -263,9 +263,9 @@ test.describe('Structure', () => {
     await expect(panel3).toBeVisible();
     await expect(panel4).toBeVisible();
     const text3 = (await panel3.innerText()).trim();
-    expect(text3).toMatch(/claude\s+\/init-personal-profile/);
-    expect(text3).toMatch(/claude\s+\/init-soul/);
-    expect(text3).not.toMatch(/agy\s+\/init-/);
+    expect(text3).toMatch(/agy\s+-i\s+"\/init-personal-profile"/);
+    expect(text3).toMatch(/agy\s+-i\s+"\/init-soul"/);
+    expect(text3).not.toMatch(/claude\s+\/init-/);
     const text4 = (await panel4.innerText()).trim();
     expect(text4).toContain('task setup-antigravity-interactive');
   });
