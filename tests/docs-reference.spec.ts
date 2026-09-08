@@ -12,6 +12,12 @@ import { dirname, join } from 'node:path';
 // Kept in its own file (never touching `tests/docs.spec.ts` or any other
 // section's `docs-*.spec.ts`) so this ticket's PR does not collide with
 // the other section-refresh PRs running in parallel.
+//
+// Bumped again for the docs-pin advance to crewrig@fcd6c60 (spec 0202,
+// issue #47): the section grows from 8 to 11 pages with 3 new entries —
+// `model-mapping-format.md` (90), `org-model-mapping-override.md` (100),
+// `agent-profile-migration.md` (110). No existing Reference page's
+// content changed in this bump.
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -28,8 +34,11 @@ const PUBLICATION_CONTRACT = '/docs/publication-contract';
 const CI_REFERENCE_FORMAT = '/docs/ci-reference-format';
 const ORG_MCP_DECLARATION = '/docs/org-mcp-declaration';
 const EXTENSION_HOOK_EVENTS = '/docs/extension-hook-events';
+const MODEL_MAPPING_FORMAT = '/docs/model-mapping-format';
+const ORG_MODEL_MAPPING_OVERRIDE = '/docs/org-model-mapping-override';
+const AGENT_PROFILE_MIGRATION = '/docs/agent-profile-migration';
 
-// In manifest nav_order (10 -> 80).
+// In manifest nav_order (10 -> 110).
 const REFERENCE_PAGES: { route: string; title: string }[] = [
   { route: CLI_MATRIX, title: 'CLI support matrix' },
   { route: SPEC_FORMAT, title: 'Specification format' },
@@ -39,17 +48,20 @@ const REFERENCE_PAGES: { route: string; title: string }[] = [
   { route: CI_REFERENCE_FORMAT, title: 'CI capability reference format' },
   { route: ORG_MCP_DECLARATION, title: 'Org MCP server declaration channel' },
   { route: EXTENSION_HOOK_EVENTS, title: 'Extension hook events' },
+  { route: MODEL_MAPPING_FORMAT, title: 'Model mapping format' },
+  { route: ORG_MODEL_MAPPING_OVERRIDE, title: 'Org model mapping override channel' },
+  { route: AGENT_PROFILE_MIGRATION, title: 'Agent capability-profile migration' },
 ];
 
 test.describe('Docs section — Reference', () => {
-  test('all 8 Reference pages return HTTP 200', async ({ page }) => {
+  test('all 11 Reference pages return HTTP 200', async ({ page }) => {
     for (const { route } of REFERENCE_PAGES) {
       const res = await page.goto(`.${route}`);
       expect(res?.status(), route).toBe(200);
     }
   });
 
-  test('sidebar lists all 8 Reference pages in manifest nav_order (10 -> 80)', async ({
+  test('sidebar lists all 11 Reference pages in manifest nav_order (10 -> 110)', async ({
     page,
   }) => {
     await page.goto('./docs');
@@ -66,7 +78,7 @@ test.describe('Docs section — Reference', () => {
     }
   });
 
-  test('/docs landing index also lists all 8 Reference pages', async ({ page }) => {
+  test('/docs landing index also lists all 11 Reference pages', async ({ page }) => {
     // The index page's own content list (`getSections()` rendered inline)
     // is a second consumer of the same manifest, distinct from the sidebar
     // nav that also renders on this page — scope to the content list so a
@@ -78,7 +90,7 @@ test.describe('Docs section — Reference', () => {
     }
   });
 
-  test('no visible metadata block on any of the 8 pages', async ({ page }) => {
+  test('no visible metadata block on any of the 11 pages', async ({ page }) => {
     for (const { route } of REFERENCE_PAGES) {
       // publication-contract.md is the one page in this set that legitimately
       // documents the `crewrig-doc:` grammar in prose and code samples (same
