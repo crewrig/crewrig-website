@@ -78,6 +78,12 @@ contract — never flowing back upstream.
 | `ci/` | Platform-neutral CI capability reference (`ci/ci-capabilities.yml`). One entry per CI job — the engine-agnostic source of truth that the per-engine pipelines (GitHub Actions today, GitLab CI and others later) are derived from and drift-checked against. Core/`strict`; its normative shape is `docs/ci-reference-format.md` (ADR-0012). Top-level rather than under `.github/` so the reference reads as engine-neutral, not GitHub-owned. |
 | `.gitlab-ci.yml` | Generated GitLab CI pipeline (spec 0048). The derived GitLab form of the portable subset of `ci/ci-capabilities.yml` — one job per portable capability, produced by `scripts/build-ci.sh`. Core/`strict` (engine-neutral generated output, upstream-owned). Never hand-edited: `bash scripts/build-ci.sh --check` guards it against drift from the reference in CI. The GitHub Actions workflows under `.github/workflows/` are NOT generated (spec 0048 R5); only GitLab is derived here. |
 
+### Model mappings (spec 0197)
+
+| Path | Description |
+|---|---|
+| `model-mappings/` | Per-CLI model mapping artifacts (`model-mappings/<target>.yml`, one per supported target) declaring which models a target can reach, what each provides, and how the spec 0195 capability vocabulary turns into that target's native fields and prose. Core/`strict`; its normative shape is `docs/model-mapping-format.md`; its hermetic gate is `scripts/check-model-mappings.sh`. Top-level rather than under `artifacts/`: a mapping is a build input, not a component, and nothing deploys it to a CLI (spec 0197 Decision 1). Each core mapping is paired with an org-owned override channel, `model-mappings/<target>.org.yml` — see *Org overlay carve-outs in core trees* below (spec 0199). |
+
 ### Build and install tooling
 
 | Path | Description |
@@ -129,6 +135,16 @@ SDLC lifecycle tools:
 | `artifacts/core/agents/pr-reviewer/` | Lifecycle agent — PR reviewer specialist. |
 | `artifacts/core/agents/architect/` | Lifecycle agent — architect specialist (plan and design). |
 
+Guided bootstrap command sources (spec 0191) — compiled to all four CLI
+surfaces via `build_commands`, the only build path that gives Gemini CLI a
+native slash command (`.gemini/commands/<name>.toml`) rather than a skill;
+see `artifacts/FORMAT.md` → *Build Outputs → Command*:
+
+| Path | Description |
+|---|---|
+| `artifacts/core/commands/init-personal-profile.md` | Guided interview writing `config/PROFILE.md`. |
+| `artifacts/core/commands/init-soul.md` | Guided interview writing `config/SOUL.md`. |
+
 Core rules files (deployed to user home at a fixed priority number):
 
 | Path | Description |
@@ -147,7 +163,17 @@ Built by `scripts/build-components.sh` from `artifacts/`. These
 directories are **assembly zones**: after a build they contain both
 core-provided harness components and the adopting organization's own compiled
 components. They are never edited directly; the source of truth is always
-`artifacts/`.
+`artifacts/` — except a compiled **agent** output, which is regenerated
+from `artifacts/` **and** `model-mappings/` together (spec 0198 requirement
+41): the build resolves each agent source's capability profile, when it
+declares one, against the mapping in force for the target it compiles for,
+so a change to either regenerates the output. That is why the four compiled
+agent output trees carry the sync policy `regenerable` (spec 0199 R43)
+rather than `strict`: an organization-level override of the mapping in
+force (`docs/org-model-mapping-override.md`) makes those four outputs
+legitimately diverge from upstream, and `scripts/sync-from-upstream.sh`
+cannot run the build to tell that apart from a hand edit. The compiled
+skill and command trees reach no mapping, so they stay `strict` (R45).
 
 An adopting organization may activate only a subset of CLIs; the sync
 mechanism respects this scope. The detailed assembly model (which CLI outputs
@@ -156,18 +182,18 @@ exist, how org artifacts integrate) is defined in spec 0012 sub-spec E2.
 | Path | Description |
 |---|---|
 | `.claude/skills/` | Compiled Claude Code skill definitions. |
-| `.claude/agents/` | Compiled Claude Code agent definitions. |
+| `.claude/agents/` | Compiled Claude Code agent definitions. Reclassified `regenerable`, replacing the manifest's implicit `strict` default (spec 0199 R43 / spec 0121 delta-01 R9). |
 | `.gemini/skills/` | Compiled Gemini CLI skill definitions. |
-| `.gemini/agents/` | Compiled Gemini CLI agent definitions. |
+| `.gemini/agents/` | Compiled Gemini CLI agent definitions. Reclassified `regenerable` (spec 0199 R43 / spec 0121 delta-01 R9). |
 | `.gemini/commands/` | Compiled Gemini CLI slash-command definitions (bootstrap helpers). |
 | `.github/skills/` | Compiled GitHub Copilot skill definitions. |
-| `.github/agents/` | Compiled GitHub Copilot agent definitions. |
+| `.github/agents/` | Compiled GitHub Copilot agent definitions. Reclassified `regenerable` (spec 0199 R43 / spec 0121 delta-01 R9). |
 | `.github/copilot-instructions.md` | Copilot system prompt built from `AGENTS.md`. |
 | `.github/workflows/` | CI/CD pipeline definitions. |
 | `.github/copilot/` | GitHub Copilot workspace configuration. |
 | `.github/copilot/settings.json` | Committed workspace settings, `strict` by default as a member of `.github/copilot/` above — except its `hooks` key, which the transcript-hooks opt-in in `setup-copilot-interactive.sh` deliberately rewrites locally with an absolute path (ADR-0001 Discovery finding #8). Reclassified `excluded`, nested under the strict `.github/copilot/` parent (spec 0097 / issue #605), so that designed-in local mutation no longer aborts `scripts/sync-from-upstream.sh`; sibling members such as `extension.json` remain `strict` and still abort on a local diff. |
 | `.agents/skills/` | Compiled Antigravity CLI skill definitions. |
-| `.agents/agents/` | Compiled Antigravity CLI agent definitions. |
+| `.agents/agents/` | Compiled Antigravity CLI agent definitions. Reclassified `regenerable` (spec 0199 R43 / spec 0121 delta-01 R9). |
 
 ### Extension distribution channel
 
@@ -236,7 +262,7 @@ from the examples layer.
 | `artifacts/community/hooks/` | Lifecycle hooks specific to the organization. |
 | `artifacts/community/policies/` | Organization-level policy files. |
 | `artifacts/community/themes/` | UI theme files specific to the organization. |
-| `artifacts/community/commands/` | Organization-specific slash-command definitions. |
+| `artifacts/community/commands/` | Organization-specific slash-command definitions. Not the only tier the `command` kind lives in — `artifacts/core/commands/` (see *Core layer* above) carries the upstream-owned bootstrap commands (spec 0191). |
 | `artifacts/community/skills/` | Sandbox for the organization's own role skills, not yet validated for the organization layer. |
 | `artifacts/community/agents/` | Sandbox for the organization's own agents, not yet validated for the organization layer. |
 | `artifacts/org/skills/` | Organization-validated role skills — promoted from `artifacts/community/` after internal review. Compiled by the tier-agnostic build like any other tier (ADR-0011, spec 0019); installed to the user home on opt-in. |
@@ -257,6 +283,10 @@ sync.
 | `AGENTS.org.md` | Organization-owned agent-rules extension, loaded alongside the upstream `AGENTS.md` (natively on Claude via `@` import; via the priority-66 setup deployment on Gemini and Copilot). Excluded from upstream sync. |
 | `.crewrig/spec-id-carrier` | Repository-scoped setting naming the git ref namespace that holds spec-id reservations (spec 0112), nested in the core `.crewrig/` tree. Value constrained to a closed pair — `refs/spec-ids/` (the shipped default) or `refs/tags/spec-id/` (for a remote that refuses a custom top-level namespace); org reservations go to the *sibling* namespace of whichever is set. Changed by pull request, never by an environment export: the create-only compare-and-swap locks a *ref*, so two contributors with divergent carriers would both succeed and both hold the same id. Excluded from upstream sync — which also means upstream can never update the value afterwards. Still reaches every fork, because `excluded` governs synchronisation, not distribution. |
 | `mcp-servers.org.json` | Organization-owned MCP server **declaration / configuration** channel (spec 0091): a root-level, CLI-agnostic manifest mapping each server name to its transport, endpoint, and authorization (no implementation code — that is `artifacts/community/mcp-servers/`, above). Setup translates it into each CLI's native MCP config and folds it after the spec-0089 operator merge (precedence framework-reserved > org > operator). Follows the `<name>.org.<ext>` convention of `AGENTS.org.md`; ships empty (no operational server or credential). Excluded from upstream sync. |
+| `model-mappings/claude.org.yml` | Organization-owned override channel for the Claude Code model mapping, nested beside the core `model-mappings/claude.yml` it overrides. Excluded from upstream sync. Ships silent (no offering, no surface, no template, no guard state, no secret); see [`docs/org-model-mapping-override.md`](org-model-mapping-override.md) (spec 0199). |
+| `model-mappings/gemini.org.yml` | Organization-owned override channel for the Gemini CLI model mapping, nested beside `model-mappings/gemini.yml`. Excluded from upstream sync. Ships silent (spec 0199). |
+| `model-mappings/copilot.org.yml` | Organization-owned override channel for the GitHub Copilot CLI model mapping, nested beside `model-mappings/copilot.yml`. Excluded from upstream sync. Ships silent (spec 0199). |
+| `model-mappings/antigravity.org.yml` | Organization-owned override channel for the Antigravity CLI model mapping, nested beside `model-mappings/antigravity.yml`. Excluded from upstream sync. Ships silent (spec 0199). |
 
 ### Adopter-managed sync state (spec 0020)
 
