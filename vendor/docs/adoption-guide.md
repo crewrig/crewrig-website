@@ -20,10 +20,10 @@ Before starting, ensure the following are in place:
   CrewRig, hosted on any Git platform (GitHub, GitLab, Gitea, or a
   self-hosted instance). The repository may be public or private and
   will serve as the overlay configuration home for the organization.
-- **The target CLI tools installed** — Claude Code, Gemini CLI, and/or
-  GitHub Copilot CLI, whichever CLIs the organization uses. The guide
-  does not cover installing those tools; treat them as installed before
-  proceeding.
+- **The target CLI tools installed** — Gemini CLI, Claude Code,
+  GitHub Copilot CLI, and/or Antigravity CLI, whichever CLIs the
+  organization uses. The guide does not cover installing those tools;
+  treat them as installed before proceeding.
 
 ## Step 1 — Set up the organization repository
 
@@ -132,6 +132,14 @@ git add crewrig.config.toml
 git commit -m "⚙️ Initialise crewrig.config.toml for <YOUR-ORG>"
 ```
 
+### Model-mapping overrides — the org-owned channel
+
+`model-mappings/<target>.org.yml` is the org-owned channel through which your organization changes what a declared `intelligence` rung resolves to on each target. One file ships per target, present and empty — editing none of them changes nothing.
+
+Beyond a core mapping's shape, an org file adds exactly two keys: `remove:`, to take an offering, surface, or guard state out of circulation, and `replaces-core:`, to replace the core mapping outright for that target. The channel is excluded from upstream synchronization, so your edits never conflict with an upstream update.
+
+The full schema and worked examples are in [`docs/org-model-mapping-override.md`](org-model-mapping-override.md); the mapping shape it overrides is normative in [`docs/model-mapping-format.md`](model-mapping-format.md).
+
 ## Step 3 — Initialize the organization identity
 
 Copy the organization identity template and populate its sections.
@@ -222,6 +230,8 @@ output directories:
 .gemini/agents/        Gemini CLI agents
 .github/skills/        GitHub Copilot CLI skills
 .github/agents/        GitHub Copilot CLI agents
+.agents/skills/        Antigravity CLI skills
+.agents/agents/        Antigravity CLI agents
 ```
 
 Commit the built outputs so the repository always contains up-to-date CLI
@@ -231,7 +241,8 @@ from scratch:
 ```bash
 git add .claude/skills .claude/agents \
         .gemini/skills .gemini/agents \
-        .github/skills .github/agents
+        .github/skills .github/agents \
+        .agents/skills .agents/agents
 git commit -m "⚙️ Build CLI components for <YOUR-ORG>"
 ```
 
@@ -292,6 +303,18 @@ This naming convention is specific to GitHub Copilot CLI and differs from
 both Claude Code (plain `.md` files in `~/.claude/rules/`) and Gemini CLI
 (numeric-prefix `.md` files in `~/.gemini/`). The setup script handles the
 naming automatically.
+
+### Antigravity CLI
+
+```bash
+bash scripts/setup-antigravity-interactive.sh
+```
+
+Deploys context to `~/.gemini/config/AGENTS.md` and MCP server configurations
+to `~/.gemini/config/mcp_config.json`. The setup script concatenates the
+numbered-priority context files into a single `AGENTS.md` file and registers
+the configured MCP servers automatically. Requires the `agy` binary on your
+PATH.
 
 ### Symlink vs. copy mode
 
@@ -381,9 +404,10 @@ drop the flag and run an ordinary sync.
 **Most-likely error — unrelated uncommitted change:** The provenance commit
 refuses to sweep in changes outside the paths governed by
 `.crewrig/core-paths.txt` and `.crewrig/.synced-markers/`. Governed means
-every `strict` or `adopt-on-edit` manifest entry, minus any `excluded` entry
-nested under it — `excluded` entries themselves (org paths such as
-`specs/org`, `docs/org`, `AGENTS.org.md`) are never part of this governed
+every `strict`, `adopt-on-edit`, or `regenerable` manifest entry, minus any
+`excluded` entry nested under it — `excluded` entries themselves (org paths
+such as `specs/org`, `docs/org`, `AGENTS.org.md`, and the org-owned
+`model-mappings/*.org.yml` override channel) are never part of this governed
 set, so an unrelated edit under one of them still aborts the graft commit
 exactly like any other unrelated change. The restore still
 runs and its output stays in your working tree, but the script exits 1
@@ -479,6 +503,14 @@ rather than the framework directly, its published artifact form changes
 starting with the first `hello-world` major release published after this
 change — check that release's own asset for confirmation rather than
 assuming a specific version number here.
+
+## Migrating to the CLI-agnostic model declaration (specs 0200, 0201)
+
+A fork that declares no capability profile on its own agent sources and populates no override-channel file takes **no action**: its own agent sources keep the behavior they have today.
+
+A stale per-agent directory left under the user's Claude Code agent directory by the retired compiled layout needs **no manual action** either — it is removed at the next assisted setup. A synchronizing fork lands on the flat compiled layout without acting, because the compiled agent output trees carry the `regenerable` synchronization policy.
+
+The full account — what changed, why, and the per-agent migration record — is in [`docs/agent-profile-migration.md`](agent-profile-migration.md).
 
 ## Troubleshooting
 
